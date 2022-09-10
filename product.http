@@ -1,0 +1,61 @@
+POST http://localhost:3000/api/v1/admin/product/new HTTP/1.1
+content-type: application/json
+
+{
+    "name": "scandisk",
+    "price": "45.20",
+    "description": "lorem20 dolor sit amet, consectetur adipiscing elit",
+    "ratings": 4,
+    "images": [
+      {
+        "public_id": "products/asfsf",
+        "url": "https//res.cloudinary.com/shop/image/upload/v1606231282/products/asfsf.jpg"
+      }
+    ],
+    "category": "Electronics",
+    "seller": "Ebay",
+    "stock": 50,
+    "numOfReviews": 22,
+    "reviews": []
+}
+###
+
+GET http://localhost:3000/api/v1/products HTTP/1.1
+
+###
+
+GET http://localhost:3000/api/v1/product/6316802f2f83b61d2268226f HTTP/1.1
+
+###
+
+PUT http://localhost:3000/api/v1/admin/product/6316802f2f83b61d2268226f HTTP/1.1
+content-type: application/json
+
+{
+    "name": "scandisk edit"
+}
+###
+
+GET http://localhost:5000/api/product/630fc8a78ee813168f2f21c5 HTTP/1.1
+
+###
+
+DELETE http://localhost:3000/api/v1/admin/product/6316802f2f83b61d2268226f HTTP/1.1
+
+###
+POST http://localhost:3000/api/v1/product/631bd6852819fdcc108a4415/reviews HTTP/1.1
+content-type: application/json
+
+{
+"rating":1,
+"comment":"some review comment"
+}
+
+###
+GET http://localhost:3000/api/v1/product/631bd6852819fdcc108a4415/reviews HTTP/1.1
+
+
+###
+DELETE http://localhost:3000/api/v1/product/631bd6852819fdcc108a4415/reviews/631bd6852819fdcc108a4415 HTTP/1.1
+
+

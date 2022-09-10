@@ -1,0 +1,85 @@
+
+POST http://localhost:3000/api/v1/register HTTP/1.1
+content-type: application/json
+
+{
+  "name":"user",
+  "password":"password",
+  "email":"user@example.com"
+}
+
+###
+
+POST http://localhost:3000/api/v1/login HTTP/1.1
+content-type: application/json
+
+{
+  "password":"password",
+  "email":"new@email.com"
+}
+
+###
+
+POST http://localhost:3000/api/v1/logout HTTP/1.1
+
+
+###
+
+POST http://localhost:3000/api/v1/forgotPassword HTTP/1.1
+content-type: application/json
+
+{
+  "email":"user@example.com"
+}
+###
+
+POST http://localhost:3000/api/v1/password/reset/:313123token HTTP/1.1
+content-type: application/json
+
+{
+  "password":"newpassword"
+}
+###
+
+GET http://localhost:3000/api/v1/me HTTP/1.1
+###
+
+PUT http://localhost:3000/api/v1/me HTTP/1.1
+content-type: application/json
+
+{
+  "name":"new name",
+  "email":"new@email.com" ,
+  "role":"admin"
+}
+###
+
+POST http://localhost:3000/api/v1/password/update HTTP/1.1
+content-type: application/json
+
+{
+  "oldPassword":"password",
+  "password":"newpassword",
+  "confirmPassword":"newpassword"
+}
+
+###
+GET http://localhost:3000/api/v1/admin/users HTTP/1.1
+
+###
+GET http://localhost:3000/api/v1/admin/user/631a1e9ee4056292dd8bf586 HTTP/1.1
+
+###
+
+PUT http://localhost:3000/api/v1/admin/user/631b80f19e31aea0b643b8e5 HTTP/1.1
+content-type: application/json
+
+{
+  "name":"new name",
+  "email":"new@email.com" ,
+  "role":"admin"
+}
+
+###
+
+DELETE http://localhost:3000/api/v1/admin/user/631b80f19e31aea0b643b8e5 HTTP/1.1

@@ -1,0 +1,19 @@
+[
+  {
+    "name": "scandisk",
+    "price": "45.20",
+    "description": "lorem20 dolor sit amet, consectetur adipiscing elit",
+    "ratings": 4,
+    "images": [
+      {
+        "public_id": "products/asfsf",
+        "url": "https//res.cloudinary.com/shop/image/upload/v1606231282/products/asfsf.jpg"
+      }
+    ],
+    "category": "Electronics",
+    "seller": "Ebay",
+    "stock": 50,
+    "numOfReviews": 22,
+    "reviews": []
+  }
+]

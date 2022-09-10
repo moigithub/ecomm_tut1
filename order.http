@@ -1,0 +1,41 @@
+
+POST http://localhost:3000/api/v1/order/new HTTP/1.1
+content-type: application/json
+
+{
+"orderItems":[
+    {"name":"jabon","quantity":1,"image":"ss","price":123, "product":"631bd6852819fdcc108a4415"}
+  ],
+  "shippingInfo":{
+    "address": "order 1",
+    "city": "ss",
+    "phone": "dd",
+    "postalCode": "ff",
+    "country": "ee"
+  },
+  "itemsPrice":123,
+  "taxPrice":12,
+  "shippingPrice":12,
+  "totalPrice":123,
+  "paymentInfo":{
+    "id":"dsfsd",
+    "status":"success"
+  }
+}
+
+###
+GET http://localhost:3000/api/v1/admin/orders HTTP/1.1
+
+###
+GET http://localhost:3000/api/v1/order/631bd6c42819fdcc108a441d HTTP/1.1
+
+###
+PUT http://localhost:3000/api/v1/admin/order/631bd6c42819fdcc108a441d HTTP/1.1
+content-type: application/json
+
+{
+  "status": "delivered"
+}
+
+###
+DELETE http://localhost:3000/api/v1/admin/order/631bd6c42819fdcc108a441d HTTP/1.1
