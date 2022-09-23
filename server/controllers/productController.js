@@ -17,27 +17,32 @@ export const getProducts = catchError(async (req, res, next) => {
   const itemsPerPage = 4
   const currentPage = Number.parseInt(req.query.page, 10) || 1
   const skip = itemsPerPage * (currentPage - 1)
-
+  const minPrice = Number.parseInt(req.query.minprice, 10)
+  const maxPrice = Number.parseInt(req.query.maxprice, 10)
+  const category = req.query.category
   // page=1 ... items 1 .. 4
   // page=2 ... items 5 ..8
   // page=3 ... items 9 ..12
   // page=4 ... items 13 ..16
+  console.log('price filter', minPrice, maxPrice, category)
 
-  const products = await Product.find({
-    ...(keyword && { name: { $regex: keyword, $options: 'i' } })
-  })
-    .skip(skip)
-    .limit(itemsPerPage)
-  const totalCount = await Product.countDocuments()
+  const filter = {
+    ...(keyword && { name: { $regex: keyword, $options: 'i' } }),
+    ...(category && { category: { $eq: category } }),
+    ...(minPrice &&
+      maxPrice && { $and: [{ price: { $gte: minPrice } }, { price: { $lte: maxPrice } }] })
+  }
+  const products = await Product.find(filter).skip(skip).limit(itemsPerPage)
+  const totalCount = await Product.countDocuments(filter)
 
-  res.status(200).json({ success: true, count: products.length, products, totalCount })
+  res.status(200).json({ success: true, products, totalCount, itemsPerPage })
 })
 
 // /api/v1/product/:id
 export const getProduct = catchError(async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id)
-
+    console.log('searching prod id', req.params.id)
     if (product) {
       return res.status(200).json({ success: true, product })
     } else {
@@ -88,7 +93,7 @@ export const createProductReview = catchError(async (req, res, next) => {
   const isReviewed = product.reviews.find(r => r.user.toString() === req.user._id.toString())
 
   if (isReviewed) {
-    for (const review of product.review) {
+    for (const review of product.reviews) {
       if (review.user.toString() === req.user._id.toString()) {
         review.comment = comment
         review.rating = Number(rating)
@@ -106,7 +111,7 @@ export const createProductReview = catchError(async (req, res, next) => {
   }
 
   product.ratings =
-    product.reviews.reduce((acc, review) => acc + raview.rating, 0) / product.reviews.length
+    product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
 
   await product.save()
 

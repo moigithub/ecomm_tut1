@@ -12,8 +12,135 @@
     ],
     "category": "Electronics",
     "seller": "Ebay",
-    "stock": 50,
+    "stock": 250,
+    "numOfReviews": 2,
+    "reviews": [],
+    "user": "631b80f19e31aea0b643b8e5"
+  },
+  {
+    "name": "usb adapter",
+    "price": "142.40",
+    "description": "lorem20 dolor sit amet, consectetur adipiscing elit",
+    "ratings": 2,
+    "images": [
+      {
+        "public_id": "products/asfsf",
+        "url": "https://media.startech.com/cms/products/main/usb31caadp.main.jpg"
+      }
+    ],
+    "category": "Electronics",
+    "seller": "Ebay",
+    "stock": 200,
+    "numOfReviews": 44,
+    "reviews": [],
+    "user": "631b80f19e31aea0b643b8e5"
+  },
+  {
+    "name": "tv mount wall",
+    "price": "25.70",
+    "description": "lorem20 dolor sit amet, consectetur adipiscing elit",
+    "ratings": 5,
+    "images": [
+      {
+        "public_id": "products/asfsf",
+        "url": "https://i5.walmartimages.com/asr/ff36a8ef-daab-498a-b5dc-64cc8552e6f3.453a3bd0a2f65186c025bacaa3f635fb.jpeg"
+      }
+    ],
+    "category": "Electronics",
+    "seller": "Ebay",
+    "stock": 30,
+    "numOfReviews": 4,
+    "reviews": [],
+    "user": "631b80f19e31aea0b643b8e5"
+  },
+  {
+    "name": "bluetooth headphones",
+    "price": "205.50",
+    "description": "lorem20 dolor sit amet, consectetur adipiscing elit",
+    "ratings": 3,
+    "images": [
+      {
+        "public_id": "products/asfsf",
+        "url": "https://i5.walmartimages.com/asr/ad78c0bb-180b-4df3-9a1f-dbad547a818d_1.5ee3a5db8e981ed584153d5d9562005e.jpeg"
+      }
+    ],
+    "category": "Electronics",
+    "seller": "Ebay",
+    "stock": 450,
+    "numOfReviews": 2,
+    "reviews": [],
+    "user": "631b80f19e31aea0b643b8e5"
+  },
+  {
+    "name": "apple airpods with charging station",
+    "price": "345.20",
+    "description": "lorem20 dolor sit amet, consectetur adipiscing elit",
+    "ratings": 3,
+    "images": [
+      {
+        "public_id": "products/asfsf",
+        "url": "https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/MME73?wid=2000&hei=2000&fmt=jpeg&qlt=95&.v=1632861342000"
+      }
+    ],
+    "category": "Electronics",
+    "seller": "Ebay",
+    "stock": 150,
+    "numOfReviews": 6,
+    "reviews": [],
+    "user": "631b80f19e31aea0b643b8e5"
+  },
+  {
+    "name": "microphone w/. volume control for PS5",
+    "price": "122.20",
+    "description": "lorem20 dolor sit amet, consectetur adipiscing elit",
+    "ratings": 4,
+    "images": [
+      {
+        "public_id": "products/asfsf",
+        "url": "https://m.media-amazon.com/images/I/714reGgb8mL._AC_SX425_.jpg"
+      }
+    ],
+    "category": "Electronics",
+    "seller": "Ebay",
+    "stock": 25,
+    "numOfReviews": 2,
+    "reviews": [],
+    "user": "631b80f19e31aea0b643b8e5"
+  },
+  {
+    "name": "Macbook air 14-inch, 8GB Ram 1TB SSD - white",
+    "price": "245.20",
+    "description": "lorem20 dolor sit amet, consectetur adipiscing elit",
+    "ratings": 4,
+    "images": [
+      {
+        "public_id": "products/asfsf",
+        "url": "https://www.apple.com/v/macbook-pro-14-and-16/b/images/overview/hero/hero_intro_endframe__e6khcva4hkeq_large.jpg"
+      }
+    ],
+    "category": "Electronics",
+    "seller": "Ebay",
+    "stock": 10,
+    "numOfReviews": 6,
+    "reviews": [],
+    "user": "631b80f19e31aea0b643b8e5"
+  },
+  {
+    "name": "Sin apple homegrown",
+    "price": "5.20",
+    "description": "lorem20 dolor sit amet, consectetur adipiscing elit",
+    "ratings": 4,
+    "images": [
+      {
+        "public_id": "products/asfsf",
+        "url": "https://assets.epicurious.com/photos/560d459cf3a00aeb2f1c31c4/master/pass/apples.jpg"
+      }
+    ],
+    "category": "Food",
+    "seller": "Amazon",
+    "stock": 250,
     "numOfReviews": 22,
-    "reviews": []
+    "reviews": [],
+    "user": "631b80f19e31aea0b643b8e5"
   }
 ]

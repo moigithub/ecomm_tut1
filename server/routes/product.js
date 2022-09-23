@@ -12,7 +12,7 @@ import {
 import { isAdmin, isAuthenticated } from '../middlewares/auth.js'
 const router = express.Router()
 
-router.route('/products').get(isAuthenticated, getProducts)
+router.route('/products').get(getProducts)
 router.route('/product/:productId/review').post(isAuthenticated, createProductReview)
 router.route('/product/:productId/reviews/:reviewId').delete(isAuthenticated, deleteProductReview)
 router.route('/product/:productId/reviews').get(isAuthenticated, getProductReviews)

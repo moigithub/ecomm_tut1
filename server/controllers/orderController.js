@@ -29,6 +29,14 @@ export const getOrder = catchError(async (req, res, next) => {
   res.status(200).json({ success: true, order })
 })
 
+export const myOrders = catchError(async (req, res, next) => {
+  const orders = await Order.find({ user: req.user._id }).lean()
+
+  const totalAmount = orders.reduce((t, o) => t + o.totalPrice, 0)
+
+  res.status(200).json({ success: true, orders, totalAmount })
+})
+
 export const getOrders = catchError(async (req, res, next) => {
   const orders = await Order.find().lean()
 

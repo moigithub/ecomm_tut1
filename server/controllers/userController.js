@@ -1,24 +1,46 @@
 import mongoose from 'mongoose'
+import fs from 'fs'
 import User from '../models/user.js'
 import { catchError } from '../utils/catchError.js'
 import ErrorHandler from '../utils/errorHandler.js'
+const COOKIE_EXPIRE_TIME = parseInt(process.env.COOKIE_EXPIRE_TIME) || 1
+// import cloudinary from 'cloudinary'
+// cloudinary.config({
+//   cloud_name: process.env.CLOUD,
+//   api_key: process.env.CLOUD_KEY,
+//   api_secret: process.env.CLOUD_SECRET
+// })
 
 // /api/v1/register
 export const newUser = catchError(async (req, res, next) => {
   const { name, email, password } = req.body
+  // const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
+  //   folder: 'uploads',
+  //   width: 150,
+  //   crop: 'scale'
+  // })
 
   const user = await User.create({
     name,
     email,
     password,
     avatar: {
-      public_id: 'aaa',
-      url: 'aaa'
+      public_id: req.file.filename,
+      url: 'uploads/' + req.file.filename
     }
   })
   const token = user.getJwtToken()
+  // auth cookie
+  const options = {
+    path: '/',
 
-  res.status(201).json({ success: true, user, token })
+    maxAge: COOKIE_EXPIRE_TIME * 24 * 60 * 60 * 1000, //n days
+    sameSite: 'none',
+    secure: true,
+    httpOnly: true
+  }
+
+  res.status(201).cookie('token', token, options).json({ success: true, user, token })
 })
 
 export const loginUser = catchError(async (req, res, next) => {
@@ -30,14 +52,17 @@ export const loginUser = catchError(async (req, res, next) => {
     email: email
   }).select('+password')
 
-  if (!user) return next(new ErrorHandler('invalid credentials'))
+  if (!user) return next(new ErrorHandler('invalid credentials'), 400)
   if (!user.checkPassword(password)) return next(new ErrorHandler('invalid credentials', 401))
 
   const token = user.getJwtToken()
 
   // auth cookie
   const options = {
-    expires: new Date(Date.now() + process.env.COOKIE_EXPIRE_TIME * 24 * 60 * 60 * 1000), //n days
+    path: '/',
+    maxAge: COOKIE_EXPIRE_TIME * 24 * 60 * 60 * 1000, //n days
+    sameSite: 'none',
+    secure: true,
     httpOnly: true
   }
 
@@ -46,9 +71,19 @@ export const loginUser = catchError(async (req, res, next) => {
 
 // /api/v1/logout
 export const logoutUser = catchError(async (req, res, next) => {
-  res.cookie('token', null, { expires: new Date(Date.now()), httpOnly: true })
+  const options = {
+    path: '/',
+    maxAge: 0, //n days
+    // expires: new Date(),
+    sameSite: 'none',
+    secure: true,
+    httpOnly: true
+  }
 
-  return res.json({ success: true, message: 'logout successfully' })
+  return res
+    .status(200)
+    .clearCookie('token', options)
+    .json({ success: true, message: 'logout successfully' })
 })
 
 // /api/v1/forgotPassword
@@ -108,11 +143,8 @@ export const updatePassword = catchError(async (req, res, next) => {
   const user = await User.findById(userId).select({ password: true })
   if (!user) return next(new ErrorHandler('not found', 404))
 
+  console.log('pass', req.body)
   if (!user.checkPassword(req.body.oldPassword)) {
-    return next(new ErrorHandler('invalid password', 400))
-  }
-
-  if (req.body.password !== req.body.confirmPassword) {
     return next(new ErrorHandler('invalid password', 400))
   }
 
@@ -131,13 +163,34 @@ export const userProfile = catchError(async (req, res, next) => {
   return res.status(200).json({ success: true, user })
 })
 
-// PUT /api/v1/profile
+// PUT /api/v1/me
 export const updateProfile = catchError(async (req, res, next) => {
   const userId = req.user.id
+
+  //TODO: find teh avatar file and delete, replace on db. new file url
   const newData = {
     name: req.body.name,
     email: req.body.email
   }
+
+  // check if user uploaded new avatar image, and delete old one if so
+  console.log('file avatar', req.file)
+  if (req.file) {
+    const oldAvatarImage = req.user.avatar.url
+    console.log('trying to delete avatar image', oldAvatarImage)
+    try {
+      fs.unlinkSync('./uploads/' + oldAvatarImage)
+      //file removed
+    } catch (err) {
+      console.error('err removing avatar file', err)
+    }
+
+    newData.avatar = {
+      public_id: req.file.filename,
+      url: 'uploads/' + req.file.filename
+    }
+  }
+
   const user = await User.findByIdAndUpdate(userId, newData, {
     new: true,
     runValidators: true
