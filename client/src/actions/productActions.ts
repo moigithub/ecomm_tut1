@@ -1,0 +1,73 @@
+import axios from 'axios'
+import { ThunkAction } from 'redux-thunk'
+import { Action, ActionCreator, AnyAction, Dispatch } from 'redux'
+
+import { RootState } from '../store'
+
+import {
+  ALL_PRODUCTS_REQUEST,
+  ALL_PRODUCTS_FAIL,
+  ALL_PRODUCTS_SUCCESS,
+  CLEAR_ERRORS,
+  PRODUCT_DETAIL_FAIL,
+  PRODUCT_DETAIL_SUCCESS,
+  PRODUCT_DETAIL_REQUEST,
+  REVIEW_FAIL,
+  REVIEW_REQUEST,
+  REVIEW_SUCCESS
+} from '../constants/product'
+
+export const getProducts: ActionCreator<ThunkAction<Promise<any>, RootState, any, Action>> =
+  (page: number = 1, keyword: string = '', price = [1, 1000], category = '') =>
+  async dispatch => {
+    try {
+      dispatch({ type: ALL_PRODUCTS_REQUEST })
+      let url = `http://localhost:4000/api/v1/products?page=${page}&keyword=${keyword}&minprice=${price[0]}&maxprice=${price[1]}`
+
+      if (category) {
+        url += `&category=${category}`
+      }
+
+      const { data } = await axios.get(url, { withCredentials: true })
+      dispatch({ type: ALL_PRODUCTS_SUCCESS, payload: data })
+    } catch (error: any) {
+      dispatch({ type: ALL_PRODUCTS_FAIL, payload: error.response.data.message })
+    }
+  }
+
+export const clearError = () => (dispatch: Dispatch<Action>) => {
+  return dispatch({ type: CLEAR_ERRORS })
+}
+
+export const getProductDetails: ActionCreator<ThunkAction<Promise<any>, RootState, any, Action>> =
+  (id: string) => async dispatch => {
+    try {
+      dispatch({ type: PRODUCT_DETAIL_REQUEST })
+
+      const { data } = await axios.get(`http://localhost:4000/api/v1/product/${id}`, {
+        withCredentials: true
+      })
+      dispatch({ type: PRODUCT_DETAIL_SUCCESS, payload: data })
+    } catch (error: any) {
+      dispatch({ type: PRODUCT_DETAIL_FAIL, payload: error.response.data.message })
+    }
+  }
+
+export const newReview: ActionCreator<ThunkAction<Promise<any>, RootState, any, Action>> =
+  (id: string, rating: number, comment: string) => async dispatch => {
+    try {
+      dispatch({ type: REVIEW_REQUEST })
+
+      const { data } = await axios.post(
+        `http://localhost:4000/api/v1/product/${id}/review`,
+        {
+          rating,
+          comment
+        },
+        { headers: { 'content-type': 'application/json' }, withCredentials: true }
+      )
+      dispatch({ type: REVIEW_SUCCESS, payload: data })
+    } catch (error: any) {
+      dispatch({ type: REVIEW_FAIL, payload: error.response.data.message })
+    }
+  }
