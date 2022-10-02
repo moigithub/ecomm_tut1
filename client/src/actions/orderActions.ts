@@ -12,6 +12,7 @@ import {
   ORDER_DETAILS_REQUEST,
   ORDER_DETAILS_SUCCESS
 } from '../constants/order'
+import { START_REQUEST, SET_SUCCESS_STATUS, SET_ERROR_STATUS } from '../constants/user'
 import { Order } from '../reducers/orderReducer'
 import { RootState } from '../store'
 
@@ -34,6 +35,35 @@ export const createOrder: ActionCreator<ThunkAction<Promise<any>, RootState, any
         type: CREATE_ORDER_FAIL,
         payload: error.response.data.message
       })
+    }
+  }
+
+export const updateOrder: ActionCreator<ThunkAction<Promise<any>, RootState, any, Action>> =
+  (id, order: Order) => async dispatch => {
+    try {
+      dispatch({ type: START_REQUEST })
+
+      const { data } = await axios.put(`http://localhost:4000/api/v1/admin/order/${id}`, order, {
+        headers: { 'content-type': 'application/json' },
+        withCredentials: true
+      })
+      dispatch({ type: SET_SUCCESS_STATUS, payload: data.message })
+    } catch (error: any) {
+      dispatch({ type: SET_ERROR_STATUS, payload: error.response.data.message })
+    }
+  }
+
+export const deleteOrder: ActionCreator<ThunkAction<Promise<any>, RootState, any, Action>> =
+  id => async dispatch => {
+    try {
+      dispatch({ type: START_REQUEST })
+
+      const { data } = await axios.delete(`http://localhost:4000/api/v1/admin/order/${id}`, {
+        withCredentials: true
+      })
+      dispatch({ type: SET_SUCCESS_STATUS, payload: data.message })
+    } catch (error: any) {
+      dispatch({ type: SET_ERROR_STATUS, payload: error.response.data.message })
     }
   }
 

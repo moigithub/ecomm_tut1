@@ -240,8 +240,16 @@ export const deleteUser = catchError(async (req, res, next) => {
     return next(new ErrorHandler('cant self delete user', 401))
   }
 
-  const user = await User.findByIdAndDelete(userId)
+  const user = await User.findById(userId)
   if (!user) return next(new ErrorHandler('not found', 404))
 
+  try {
+    fs.unlinkSync('./uploads/' + user.avatar.public_id)
+    //file removed
+  } catch (err) {
+    console.error('err removing avatar file', err)
+  }
+
+  user.delete()
   return res.status(200).json({ success: true, message: 'user deleted', user })
 })

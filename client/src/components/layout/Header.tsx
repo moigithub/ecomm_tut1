@@ -53,11 +53,17 @@ export const Header = () => {
                 aria-expanded='false'
               >
                 <figure className='avatar avatar-nav'>
-                  <img
-                    src={'http://localhost:4000/' + user.avatar?.url}
-                    alt={user.name}
-                    className='rounded-circle'
-                  />
+                  {user.avatar?.url ? (
+                    <img
+                      src={'http://localhost:4000/' + user.avatar?.url}
+                      alt={user.name}
+                      className='rounded-circle'
+                    />
+                  ) : (
+                    <span className='d-flex align-items-center rounded-circle'>
+                      {user.name.slice(0, 1)}
+                    </span>
+                  )}
                 </figure>
                 <span>{user?.name || ''}</span>
               </Link>

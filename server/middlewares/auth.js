@@ -4,7 +4,6 @@ import ErrorHandler from '../utils/errorHandler.js'
 
 export const isAuthenticated = async (req, res, next) => {
   const token = req.cookies.token
-  console.log('isauth', token)
 
   if (!token) return next(new ErrorHandler('unauthorized', 401))
 

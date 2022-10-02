@@ -56,7 +56,12 @@ export const Cart = () => {
                 <div key={item._id} className='cart-item'>
                   <div className='row'>
                     <div className='col-4 col-lg-3'>
-                      <img src={item.image} alt='' height='90' width='115' />
+                      <img
+                        src={'http://localhost:4000/' + item.image}
+                        alt=''
+                        height='90'
+                        width='115'
+                      />
                     </div>
                     <div className='col-5 col-lg-3'>
                       <Link to={`/product/${item._id}`}>{item.name}</Link>

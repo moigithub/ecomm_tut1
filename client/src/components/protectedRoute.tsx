@@ -4,14 +4,19 @@ import { RootState } from '../store'
 
 interface props {
   children?: React.ReactElement | null
+  isAdmin?: boolean
 }
-export const ProtectedRoute: React.FC<props> = ({ children }) => {
-  const { loading, isAuthenticated } = useSelector((state: RootState) => state.auth)
+export const ProtectedRoute: React.FC<props> = ({ isAdmin = false, children }) => {
+  const { loading, isAuthenticated, user } = useSelector((state: RootState) => state.auth)
 
   if (loading) return null
 
   if (!isAuthenticated) {
     return <Navigate to='/login' replace></Navigate>
+  }
+
+  if (isAdmin && user?.role !== 'admin') {
+    return <Navigate to='/' replace></Navigate>
   }
 
   return children ? children : <Outlet />

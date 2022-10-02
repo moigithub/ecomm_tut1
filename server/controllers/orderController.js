@@ -61,7 +61,7 @@ export const processOrder = catchError(async (req, res, next) => {
   order.deliveredAt = Date.now()
   order.save()
 
-  res.status(201).json({ success: true, order })
+  res.status(201).json({ success: true, order, message: 'Order updated' })
 })
 
 async function updateStock(productId, quantity) {

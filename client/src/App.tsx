@@ -30,6 +30,15 @@ import { UpdatePassword } from './components/user/UpdatePassword'
 import { UpdateProfile } from './components/user/UpdateProfile'
 import { OrderList } from './components/order/OrderList'
 import { OrderDetails } from './components/order/OrderDetails'
+import { Dashboard } from './components/admin/Dashboard'
+import { AdminProductsList } from './components/admin/AdminProductsList'
+import { NewProduct } from './components/admin/NewProduct'
+import { UpdateProduct } from './components/admin/UpdateProduct'
+import { AdminOrderList } from './components/admin/AdminOrderList'
+import { ProcessOrder } from './components/admin/ProcessOrder'
+import { AdminUserList } from './components/admin/AdminUserList'
+import { UpdateUser } from './components/admin/UpdateUser'
+import { AdminProductReviews } from './components/admin/AdminProductReviews'
 
 const options = {
   position: positions.BOTTOM_CENTER,
@@ -69,6 +78,7 @@ function App() {
                 <Route path='/product/:id' element={<ProductDetails />} />
                 <Route path='/login' element={<Login />} />
                 <Route path='/cart' element={<Cart />} />
+
                 <Route element={<ProtectedRoute />}>
                   <Route path='/me' element={<Profile />} />
                   <Route path='/me/edit' element={<UpdateProfile />} />
@@ -93,9 +103,21 @@ function App() {
                 <Route path='/password/forgot' element={<ForgotPassword />} />
               </Routes>
             </div>
-
-            <Footer></Footer>
+            <Routes>
+              <Route element={<ProtectedRoute isAdmin />}>
+                <Route path='/dashboard' element={<Dashboard />} />
+                <Route path='/admin/products' element={<AdminProductsList />} />
+                <Route path='/admin/products/new' element={<NewProduct />} />
+                <Route path='/admin/products/:id' element={<UpdateProduct />} />
+                <Route path='/admin/order/:id' element={<ProcessOrder />} />
+                <Route path='/admin/orders' element={<AdminOrderList />} />
+                <Route path='/admin/users' element={<AdminUserList />} />
+                <Route path='/admin/reviews' element={<AdminProductReviews />} />
+                <Route path='/admin/user/:id' element={<UpdateUser />} />
+              </Route>
+            </Routes>
           </div>
+          <Footer></Footer>
         </BrowserRouter>{' '}
       </AlertProvider>
     </Provider>

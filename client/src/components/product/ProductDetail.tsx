@@ -83,7 +83,11 @@ export const ProductDetails = () => {
           <Carousel pause='hover'>
             {product?.images?.map(image => (
               <Carousel.Item key={image.public_id}>
-                <img src={image.url} alt={product?.name} className='d-block w-100' />
+                <img
+                  src={'http://localhost:4000/' + image.url}
+                  alt={product?.name}
+                  className='d-block w-100'
+                />
               </Carousel.Item>
             ))}
           </Carousel>

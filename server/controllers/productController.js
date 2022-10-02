@@ -2,12 +2,22 @@ import mongoose from 'mongoose'
 import Product from '../models/product.js'
 import { catchError } from '../utils/catchError.js'
 import ErrorHandler from '../utils/errorHandler.js'
+import fs from 'fs'
 
 // /api/v1/product/new
 export const newProducts = catchError(async (req, res, next) => {
-  req.body.user = req.user.id
-  const product = await Product.create(req.body)
-  //TODO handle images save on cloudinary
+  const images = req.files.map(file => ({
+    public_id: file.filename,
+    url: 'uploads/' + file.filename
+  }))
+
+  const newProduct = {
+    ...req.body,
+    images,
+    user: req.user.id
+  }
+  const product = await Product.create(newProduct)
+
   res.status(200).json({ success: true, product })
 })
 
@@ -42,7 +52,7 @@ export const getProducts = catchError(async (req, res, next) => {
 export const getProduct = catchError(async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id)
-    console.log('searching prod id', req.params.id)
+
     if (product) {
       return res.status(200).json({ success: true, product })
     } else {
@@ -53,34 +63,72 @@ export const getProduct = catchError(async (req, res, next) => {
   }
 })
 
-// /api/v1/product/:id
+// /api/v1/admin/product/:id
 export const updateProduct = catchError(async (req, res, next) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ success: false, message: 'Not found' })
+    }
+
+    let images
+    if (req.files.length > 0) {
+      // delete product images
+
+      for (const image of product.images) {
+        try {
+          fs.unlinkSync('./uploads/' + image.public_id)
+        } catch (err) {
+          console.log('image not found', err)
+        }
+      }
+
+      images = req.files.map(file => ({
+        public_id: file.filename,
+        url: 'uploads/' + file.filename
+      }))
+    }
+
+    const productData = {
+      ...req.body
+    }
+
+    if (images) {
+      productData.images = images
+    }
+
+    const udpatedProduct = await Product.findByIdAndUpdate(req.params.id, productData, {
       new: true,
       runValidators: true
     })
-
-    if (!product) {
-      res.status(404).json({ success: false, message: 'Not found' })
-    } else {
-      return res.status(200).json({ success: true, product })
-    }
+    return res
+      .status(200)
+      .json({ success: true, product: udpatedProduct, message: 'Product updated' })
   } catch (err) {
     res.status(400).json({ success: false, message: 'Not found', err })
   }
 })
 
-// /api/v1/product/:id
+// /api/v1/admin/product/:id
 export const deleteProduct = catchError(async (req, res, next) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id)
+    const product = await Product.findById(req.params.id)
 
     if (!product) {
       res.status(400).json({ success: false, message: 'Not found' })
-    } else {
-      return res.status(204).json({ success: true, product })
     }
+
+    // delete product images
+    for (const image of product.images) {
+      try {
+        fs.unlinkSync('/uploads/' + image.public_id)
+      } catch (err) {
+        console.log('image not found', err)
+      }
+    }
+
+    product.remove()
+    return res.status(200).json({ success: true, product, message: 'Deleted successfully' })
   } catch (err) {
     res.status(400).json({ success: false, message: 'Not found', err })
   }
@@ -151,5 +199,14 @@ export const deleteProductReview = catchError(async (req, res, next) => {
     { new: true, runValidators: true }
   )
 
-  return res.status(200).json({ success: true })
+  return res.status(200).json({ success: true, message: 'Review deleted' })
+})
+
+///admin/products
+
+// /api/v1/products
+export const getAdminProducts = catchError(async (req, res, next) => {
+  const products = await Product.find()
+
+  res.status(200).json({ success: true, products })
 })
