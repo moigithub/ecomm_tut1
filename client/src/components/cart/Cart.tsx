@@ -7,8 +7,10 @@ import { useNavigate } from 'react-router-dom'
 import { Product } from '../../reducers/productReducers'
 import { RootState } from '../../store'
 import { MetaData } from '../layout/MetaData'
-import { addCartItem, removeCartItem } from '../../actions/cartActions'
+// import { addCartItem, removeCartItem } from '../../actions/cartActions'
 import { CartItem } from '../../reducers/cartReducers'
+import axios from 'axios'
+import { removeCartItem, updateCartItem } from '../../slices/cartSlice'
 
 export const Cart = () => {
   const navigate = useNavigate()
@@ -16,18 +18,31 @@ export const Cart = () => {
   const dispatch = useDispatch()
   const { cartItems } = useSelector((state: RootState) => state.cart)
 
-  const decreaseQty = (cartItem: CartItem) => {
+  const getProduct = async (id: string, quantity: number) => {
+    const { data } = await axios.get(`http://localhost:4000/api/v1/product/${id}`, {
+      withCredentials: true
+    })
+    return {
+      _id: id,
+      name: data.product.name,
+      price: data.product.price,
+      image: data.product.images[0].url,
+      stock: data.product.stock,
+      quantity
+    }
+  }
+  const decreaseQty = async (cartItem: CartItem) => {
     if (cartItem.quantity <= 1) return
 
     const newQty = cartItem.quantity - 1
-    dispatch(addCartItem(cartItem._id, newQty))
+    dispatch(updateCartItem(await getProduct(cartItem._id, newQty)))
   }
 
-  const increaseQty = (cartItem: CartItem) => {
+  const increaseQty = async (cartItem: CartItem) => {
     if (cartItem.quantity >= cartItem.stock) return
 
     const newQty = cartItem.quantity + 1
-    dispatch(addCartItem(cartItem._id, newQty))
+    dispatch(updateCartItem(await getProduct(cartItem._id, newQty)))
   }
 
   const removeItem = (cartItem: CartItem) => {

@@ -1,8 +1,12 @@
+import axios from 'axios'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { getAdminOrders, getAdminProducts } from '../../actions/productActions'
-import { loadAllUsers } from '../../actions/userActions'
+import { setAdminOrders } from '../../slices/orderSlice'
+import { setAdminProducts } from '../../slices/productSlice'
+import { setAdminUsers } from '../../slices/userSlice'
+// import { getAdminOrders, getAdminProducts } from '../../actions/productActions'
+// import { loadAllUsers } from '../../actions/userActions'
 
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
@@ -10,16 +14,35 @@ import { Sidebar } from './Sidebar'
 
 export const Dashboard = () => {
   const dispatch = useDispatch()
-  const { users } = useSelector((state: RootState) => state.allUsers)
-
-  const { products } = useSelector((state: RootState) => state.adminProducts)
-  const { loading, orders, totalAmount } = useSelector((state: RootState) => state.adminOrders)
-  let outOfStock = products.reduce((total, product) => total + (product.stock === 0 ? 1 : 0), 0)
+  const { users } = useSelector((state: RootState) => state.user)
+  const { adminProducts } = useSelector((state: RootState) => state.product)
+  const { loading, orders, totalAmount } = useSelector((state: RootState) => state.order)
+  let outOfStock = adminProducts.reduce(
+    (total, product) => total + (product.stock === 0 ? 1 : 0),
+    0
+  )
 
   useEffect(() => {
-    dispatch(getAdminProducts())
-    dispatch(loadAllUsers())
-    dispatch(getAdminOrders())
+    const getOrders = async () => {
+      let url = 'http://localhost:4000/api/v1/admin/orders'
+      const { data } = await axios.get(url, { withCredentials: true })
+      dispatch(setAdminOrders(data))
+    }
+    const getProducts = async () => {
+      let url = 'http://localhost:4000/api/v1/admin/products'
+      const { data } = await axios.get(url, { withCredentials: true })
+      dispatch(setAdminProducts(data))
+    }
+    const getUsers = async () => {
+      let url = `http://localhost:4000/api/v1/admin/users`
+
+      const { data } = await axios.get(url, { withCredentials: true })
+      dispatch(setAdminUsers(data.users))
+    }
+
+    getProducts()
+    getUsers()
+    getOrders()
   }, [dispatch])
 
   if (loading) {
@@ -54,7 +77,7 @@ export const Dashboard = () => {
                 <div className='text-center card-font-size'>
                   Products
                   <br />
-                  <b>{products.length}</b>
+                  <b>{adminProducts.length}</b>
                 </div>
               </div>
               <Link to='/admin/products' className='card-footer text-white clearfix small z-1'>

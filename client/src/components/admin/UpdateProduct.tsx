@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { useAlert } from 'react-alert'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { clearError, getProductDetails, updateProduct } from '../../actions/productActions'
+// import { clearError, getProductDetails, updateProduct } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Sidebar } from './Sidebar'
 import { useParams } from 'react-router-dom'
 import { CLEAR_STATUS } from '../../constants/user'
+import { clearStatus, setSuccess } from '../../slices/appStateSlice'
+import axios from 'axios'
+import { setProductDetail, updateAdminProduct } from '../../slices/productSlice'
 
 const categories = [
   'Electronics',
@@ -26,7 +29,7 @@ const categories = [
 export const UpdateProduct = () => {
   const { id } = useParams()
 
-  const { loading, product, error } = useSelector((state: RootState) => state.productDetails)
+  const { loading, product, error } = useSelector((state: RootState) => state.product)
   const {
     loading: appLoading,
     message,
@@ -46,7 +49,14 @@ export const UpdateProduct = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    dispatch(getProductDetails(id))
+    const getProduct = async (id: string) => {
+      const { data } = await axios.get(`http://localhost:4000/api/v1/product/${id}`, {
+        withCredentials: true
+      })
+      dispatch(setProductDetail(data.product))
+    }
+
+    getProduct(id as string)
   }, [dispatch, id])
 
   useEffect(() => {
@@ -65,13 +75,13 @@ export const UpdateProduct = () => {
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
 
     if (message) {
       navigate('/admin/products')
-      alert.success('Product updated successfully')
-      dispatch({ type: CLEAR_STATUS })
+      alert.success(message)
+      dispatch(clearStatus())
     }
   }, [error, message])
 
@@ -95,7 +105,7 @@ export const UpdateProduct = () => {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     const product = new FormData()
@@ -113,7 +123,16 @@ export const UpdateProduct = () => {
       }
     }
 
-    dispatch(updateProduct(id, product))
+    const updateProduct = async (id: string, productData: any) => {
+      const { data } = await axios.put(
+        `http://localhost:4000/api/v1/admin/product/${id}`,
+        productData,
+        { headers: { 'content-type': 'multipart/form-data' }, withCredentials: true }
+      )
+      return data
+    }
+    dispatch(updateAdminProduct(await updateProduct(id as string, product)))
+    dispatch(setSuccess('Product updated successfully'))
   }
 
   return (

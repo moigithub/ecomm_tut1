@@ -5,18 +5,21 @@ import type {} from 'redux-thunk/extend-redux'
 import { Link, useParams } from 'react-router-dom'
 import { useNavigate, useLocation } from 'react-router-dom'
 import queryString from 'query-string'
-import { clearError } from '../../actions/productActions'
-import { login } from '../../actions/userActions'
+// import { clearError } from '../../actions/productActions'
+// import { login } from '../../actions/userActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
+import { clearStatus } from '../../slices/appStateSlice'
+import { loginUser } from '../../slices/userSlice'
+import axios from 'axios'
 
 export const Login = () => {
   const navigate = useNavigate()
   const { search } = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const { loading, user, isAuthenticated, error } = useSelector((state: RootState) => state.auth)
+  const { loading, user, isAuthenticated, error } = useSelector((state: RootState) => state.user)
   const dispatch = useDispatch()
   const alert = useAlert()
 
@@ -33,13 +36,23 @@ export const Login = () => {
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
   }, [error])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    dispatch(login(email, password))
+    const login = async (email: string, password: string) => {
+      let url = `http://localhost:4000/api/v1/login`
+
+      const { data } = await axios.post(
+        url,
+        { email, password },
+        { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+      )
+      dispatch(loginUser(data.user))
+    }
+    login(email, password)
   }
 
   const handleEmail = (e: React.ChangeEvent<HTMLInputElement>) => {

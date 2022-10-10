@@ -7,7 +7,7 @@ interface props {
   isAdmin?: boolean
 }
 export const ProtectedRoute: React.FC<props> = ({ isAdmin = false, children }) => {
-  const { loading, isAuthenticated, user } = useSelector((state: RootState) => state.auth)
+  const { loading, isAuthenticated, user } = useSelector((state: RootState) => state.user)
 
   if (loading) return null
 

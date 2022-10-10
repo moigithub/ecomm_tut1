@@ -1,29 +1,40 @@
 import { Fragment, useEffect } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-import { clearError } from '../../actions/productActions'
+// import { clearError } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
-import { orderDetails } from '../../actions/orderActions'
+// import { orderDetails } from '../../actions/orderActions'
 import { Link, useParams } from 'react-router-dom'
+import { clearStatus } from '../../slices/appStateSlice'
+import axios from 'axios'
+import { setOrderDetail } from '../../slices/orderSlice'
 
 export const OrderDetails = () => {
   const { id } = useParams()
-  const { loading, order, error } = useSelector((state: RootState) => state.orderDetails)
+  const { loading, order, error } = useSelector((state: RootState) => state.order)
   const { shipping } = useSelector((state: RootState) => state.cart)
 
   const dispatch = useDispatch()
   const alert = useAlert()
 
   useEffect(() => {
-    dispatch(orderDetails(id))
+    const orderDetails = async (id: string) => {
+      const { data } = await axios.get('http://localhost:4000/api/v1/order/' + id, {
+        headers: { 'content-type': 'application/json' },
+        withCredentials: true
+      })
+
+      dispatch(setOrderDetail(data.order))
+    }
+    orderDetails(id as string)
   }, [dispatch])
 
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
   }, [error])
 
@@ -75,7 +86,12 @@ export const OrderDetails = () => {
             {order?.orderItems.map(item => (
               <div key={item._id} className='row my-5'>
                 <div className='col-4 col-lg-2'>
-                  <img src={item.image} alt={item.name} height='45' width='65' />
+                  <img
+                    src={'http://localhost:4000/' + item.image}
+                    alt={item.name}
+                    height='45'
+                    width='65'
+                  />
                 </div>
 
                 <div className='col-5 col-lg-5'>

@@ -7,7 +7,10 @@ import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { useNavigate } from 'react-router-dom'
 import { CLEAR_STATUS } from '../../constants/user'
-import { forgotPassword } from '../../actions/userActions'
+import { forgotPassword } from '../../slices/userSlice'
+import axios from 'axios'
+import { clearStatus } from '../../slices/appStateSlice'
+// import { forgotPassword } from '../../actions/userActions'
 
 export const ForgotPassword = () => {
   const navigate = useNavigate()
@@ -20,14 +23,24 @@ export const ForgotPassword = () => {
   useEffect(() => {
     if (message) {
       alert.success(message)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
       navigate('/me')
     }
   }, [message])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    dispatch(forgotPassword(email))
+    const forgotPwd = async (email: string) => {
+      let url = `http://localhost:4000/api/v1/forgotPassword`
+
+      const { data } = await axios.post(
+        url,
+        { email },
+        { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+      )
+      dispatch(forgotPassword(data))
+    }
+    forgotPwd(email)
   }
 
   const handleEmail = (e: React.ChangeEvent<HTMLInputElement>) => {

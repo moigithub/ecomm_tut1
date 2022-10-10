@@ -7,10 +7,11 @@ import { useNavigate } from 'react-router-dom'
 import { Product } from '../../reducers/productReducers'
 import { RootState } from '../../store'
 import { MetaData } from '../layout/MetaData'
-import { addCartItem, removeCartItem, saveShippingInfo } from '../../actions/cartActions'
+// import { addCartItem, removeCartItem, saveShippingInfo } from '../../actions/cartActions'
 import { CartItem } from '../../reducers/cartReducers'
 import { countries } from 'countries-list'
 import { CheckoutSteps } from './CheckoutSteps'
+import { saveShippingInfo } from '../../slices/cartSlice'
 
 export const Shipping = () => {
   const navigate = useNavigate()

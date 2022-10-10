@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-import { clearError, getAdminOrders } from '../../actions/productActions'
+// import { clearError, getAdminOrders } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
@@ -11,10 +11,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { CLEAR_STATUS } from '../../constants/user'
 import { Order } from '../../reducers/orderReducer'
-import { deleteOrder } from '../../actions/orderActions'
+// import { deleteOrder } from '../../actions/orderActions'
+import { deleteAdminOrder, setAdminOrders } from '../../slices/orderSlice'
+import axios from 'axios'
+import { clearStatus } from '../../slices/appStateSlice'
 
 export const AdminOrderList = () => {
-  const { loading, orders, error } = useSelector((state: RootState) => state.adminOrders)
+  const { loading, orders, error } = useSelector((state: RootState) => state.order)
   const {
     loading: appLoading,
     message,
@@ -26,26 +29,31 @@ export const AdminOrderList = () => {
   const alert = useAlert()
 
   useEffect(() => {
-    dispatch(getAdminOrders())
+    const getOrders = async () => {
+      let url = 'http://localhost:4000/api/v1/admin/orders'
+      const { data } = await axios.get(url, { withCredentials: true })
+      return data
+    }
+    dispatch(setAdminOrders(getOrders()))
   }, [dispatch, message])
 
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
     if (message) {
       alert.success(message)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
     }
     if (errorMessage) {
       alert.error(errorMessage)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
     }
   }, [error, errorMessage, message])
 
   const handleDeleteOrder = (order: Order) => {
-    dispatch(deleteOrder(order._id))
+    dispatch(deleteAdminOrder(order._id))
   }
 
   if (loading || appLoading) {

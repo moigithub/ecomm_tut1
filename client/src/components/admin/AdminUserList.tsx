@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-import { clearError } from '../../actions/productActions'
+// import { clearError } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
@@ -10,11 +10,14 @@ import { MDBDataTable } from 'mdbreact'
 import { Link, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { CLEAR_STATUS } from '../../constants/user'
-import { deleteUser, loadAllUsers } from '../../actions/userActions'
+// import { deleteUser, loadAllUsers } from '../../actions/userActions'
 import { User } from '../../reducers/userReducers'
+import { clearStatus } from '../../slices/appStateSlice'
+import { deleteAdminUser, setAdminUsers } from '../../slices/userSlice'
+import axios from 'axios'
 
 export const AdminUserList = () => {
-  const { loading, users, error } = useSelector((state: RootState) => state.allUsers)
+  const { loading, users, error } = useSelector((state: RootState) => state.user)
   const {
     loading: appLoading,
     message,
@@ -26,26 +29,41 @@ export const AdminUserList = () => {
   const alert = useAlert()
 
   useEffect(() => {
-    dispatch(loadAllUsers())
+    const loadAllUsers = async () => {
+      let url = `http://localhost:4000/api/v1/admin/users`
+      const { data } = await axios.get(url, { withCredentials: true })
+      console.log('users', data)
+      dispatch(setAdminUsers(data.users))
+    }
+    loadAllUsers()
   }, [dispatch, message])
 
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
     if (message) {
       alert.success(message)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
     }
     if (errorMessage) {
       alert.error(errorMessage)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
     }
   }, [error, errorMessage, message])
 
   const handleDeleteUser = (user: User) => {
-    dispatch(deleteUser(user._id))
+    const deleteUser = async (id: string) => {
+      let url = `http://localhost:4000/api/v1/admin/user/${id}`
+
+      const { data } = await axios.delete(url, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true
+      })
+      return data
+    }
+    dispatch(deleteAdminUser(deleteUser(user._id)))
   }
 
   if (loading || appLoading) {

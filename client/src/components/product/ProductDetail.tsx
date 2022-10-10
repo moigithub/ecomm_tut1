@@ -4,18 +4,22 @@ import { useAlert } from 'react-alert'
 import type {} from 'redux-thunk/extend-redux'
 import { useParams } from 'react-router-dom'
 import { Carousel } from 'react-bootstrap'
-import { addCartItem } from '../../actions/cartActions'
-import { getProductDetails, clearError, newReview } from '../../actions/productActions'
+// import { addCartItem } from '../../actions/cartActions'
+// import { getProductDetails, clearStatus, newReview } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
 import { REVIEW_RESET } from '../../constants/product.js'
+import { clearStatus, setSuccess } from '../../slices/appStateSlice'
+import { addProductReview, setProductDetail } from '../../slices/productSlice'
+import axios from 'axios'
+import { updateCartItem } from '../../slices/cartSlice'
 
 export const ProductDetails = () => {
   const { id } = useParams()
-  const { loading, product, error } = useSelector((state: RootState) => state.productDetails)
-  const { user } = useSelector((state: RootState) => state.auth)
-  const { error: reviewError, success } = useSelector((state: RootState) => state.newReview)
+  const { loading, product, error } = useSelector((state: RootState) => state.product)
+  const { user } = useSelector((state: RootState) => state.user)
+  const { error: reviewError, message } = useSelector((state: RootState) => state.appState)
   const dispatch = useDispatch()
   const alert = useAlert()
   const [count, setCount] = useState(1)
@@ -23,28 +27,41 @@ export const ProductDetails = () => {
   const [hoverStar, setRatingHover] = useState(0)
   const [comment, setComment] = useState('')
 
+  const getProduct = async (id: string, quantity?: number) => {
+    const { data } = await axios.get(`http://localhost:4000/api/v1/product/${id}`, {
+      withCredentials: true
+    })
+    return {
+      ...data.product,
+      image: data.product.images[0].url,
+      quantity
+    }
+  }
+
   useEffect(() => {
-    dispatch(getProductDetails(id))
+    ;(async () => {
+      dispatch(setProductDetail(await getProduct(id as string)))
+    })()
   }, [dispatch, id])
 
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError()) //FIXME: prod details dont have error key
+      dispatch(clearStatus())
     }
 
     if (reviewError) {
       alert.error(reviewError)
-      dispatch({ type: REVIEW_RESET })
+      dispatch(clearStatus())
 
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
 
-    if (success) {
-      alert.success('Review submitted successfully')
-      dispatch({ type: REVIEW_RESET })
+    if (message) {
+      alert.success(message)
+      dispatch(clearStatus())
     }
-  }, [error, success, reviewError])
+  }, [error, message, reviewError])
 
   const decreaseQty = () => {
     if (count > 1) {
@@ -59,16 +76,30 @@ export const ProductDetails = () => {
     }
   }
 
-  const addToCart = () => {
-    dispatch(addCartItem(id, count))
+  const addToCart = async () => {
+    console.log('adding to card', id)
+    dispatch(updateCartItem(await getProduct(id as string, count)))
   }
 
   const setCurrentRatings = (star: number) => () => {
     setRating(star)
   }
 
-  const submitReviewHandler = () => {
-    dispatch(newReview(id, rating, comment))
+  const submitReviewHandler = async () => {
+    const sendReview = async (id: string, rating: number, comment: string) => {
+      const { data } = await axios.post(
+        `http://localhost:4000/api/v1/product/${id}/review`,
+        {
+          rating,
+          comment
+        },
+        { headers: { 'content-type': 'application/json' }, withCredentials: true }
+      )
+
+      dispatch(addProductReview(data.product))
+      dispatch(setSuccess('Review sent successfully'))
+    }
+    sendReview(id as string, rating, comment)
   }
 
   if (loading) {
@@ -259,7 +290,7 @@ export const ProductDetails = () => {
         <div className='reviews w-75'>
           <h3>Others reviews:</h3>
           <hr />
-          {product?.reviews.map(review => (
+          {product?.reviews?.map(review => (
             <div key={review._id} className='review-cart my-3'>
               <div className='rating-outer'>
                 <div

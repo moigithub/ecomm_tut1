@@ -8,23 +8,24 @@ import { clearError } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
+import { clearStatus } from '../../slices/appStateSlice'
 
 export const Profile = () => {
   const navigate = useNavigate()
-  const { loading, user, isAuthenticated, error } = useSelector((state: RootState) => state.auth)
+  const { loading, user, isAuthenticated, error } = useSelector((state: RootState) => state.user)
   const dispatch = useDispatch()
   const alert = useAlert()
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate(`/`)
-    }
-  }, [isAuthenticated])
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     navigate(`/`)
+  //   }
+  // }, [isAuthenticated])
 
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
   }, [error])
 

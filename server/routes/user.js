@@ -35,12 +35,12 @@ router.route('/forgotPassword').post(forgotPassword)
 router.route('/password/reset/:token').post(resetPassword)
 router.route('/password/update').post(isAuthenticated, updatePassword)
 router.route('/me').get(isAuthenticated, userProfile)
-router.route('/me').put(isAuthenticated, upload.single('avatar'), updateProfile)
+// router.route('/me').put(isAuthenticated, upload.single('avatar'), updateProfile)
 router.route('/admin/users').get(isAuthenticated, isAdmin, getUsers)
 router
   .route('/admin/user/:id')
   .get(isAuthenticated, isAdmin, getUser)
-  .put(isAuthenticated, isAdmin, updateUser)
+  .put(isAuthenticated, isAdmin, upload.single('avatar'), updateUser)
   .delete(isAuthenticated, isAdmin, deleteUser)
 
 export default router

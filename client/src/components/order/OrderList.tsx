@@ -1,27 +1,38 @@
 import { useEffect } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-import { clearError } from '../../actions/productActions'
+// import { clearError } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
 import { MDBDataTable } from 'mdbreact'
-import { myOrders } from '../../actions/orderActions'
+// import { myOrders } from '../../actions/orderActions'
 import { Link } from 'react-router-dom'
+import { clearStatus } from '../../slices/appStateSlice'
+import axios from 'axios'
+import { setOrders } from '../../slices/orderSlice'
 
 export const OrderList = () => {
-  const { loading, orders, error } = useSelector((state: RootState) => state.myOrders)
+  const { loading, orders, error } = useSelector((state: RootState) => state.order)
   const dispatch = useDispatch()
   const alert = useAlert()
 
   useEffect(() => {
-    dispatch(myOrders())
+    const getOrders = async () => {
+      const { data } = await axios.get('http://localhost:4000/api/v1/orders/me', {
+        headers: { 'content-type': 'application/json' },
+        withCredentials: true
+      })
+      console.log('orders', data)
+      dispatch(setOrders(data))
+    }
+    getOrders()
   }, [dispatch])
 
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
   }, [error])
 
@@ -58,7 +69,7 @@ export const OrderList = () => {
       }
     ],
     rows: orders.map(order => {
-      const statusStyle = order.orderStatus.includes('Delivered')
+      const statusStyle = order.orderStatus?.includes('Delivered')
         ? { color: 'green' }
         : { color: 'red' }
 

@@ -19,7 +19,7 @@ import { Shipping } from './components/cart/Shipping'
 import { ConfirmOrder } from './components/cart/ConfirmOrder'
 import { Payment } from './components/cart/Payment'
 import store from './store'
-import { loadUser } from './actions/userActions'
+// import { loadUser } from './actions/userActions'
 import './App.css'
 import { OrderSuccess } from './components/cart/OrderSuccess'
 import { ProductDetails } from './components/product/ProductDetail'
@@ -39,6 +39,7 @@ import { ProcessOrder } from './components/admin/ProcessOrder'
 import { AdminUserList } from './components/admin/AdminUserList'
 import { UpdateUser } from './components/admin/UpdateUser'
 import { AdminProductReviews } from './components/admin/AdminProductReviews'
+import { setUserMe } from './slices/userSlice'
 
 const options = {
   position: positions.BOTTOM_CENTER,
@@ -50,8 +51,14 @@ function App() {
   const [stripeApiKey, setStripeApiKey] = useState('')
 
   useEffect(() => {
-    if (store.getState().auth.user) {
-      store.dispatch(loadUser())
+    if (store.getState().user.user) {
+      const loadUser = async () => {
+        let url = `http://localhost:4000/api/v1/me`
+        const { data } = await axios.get(url, { withCredentials: true })
+
+        store.dispatch(data)
+      }
+      loadUser()
     }
 
     async function getStripeApiKey() {

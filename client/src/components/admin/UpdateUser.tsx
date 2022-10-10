@@ -6,42 +6,50 @@ import type {} from 'redux-thunk/extend-redux'
 
 import { Link, useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import { clearError } from '../../actions/productActions'
-import { getUserDetail, updateUser } from '../../actions/userActions'
+// import { clearError } from '../../actions/productActions'
+// import { getUserDetail, updateUser } from '../../actions/userActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
 import { Sidebar } from './Sidebar'
+import { clearStatus, setSuccess } from '../../slices/appStateSlice'
+import { setAdminUserDetail, updateAdminUser } from '../../slices/userSlice'
+import axios from 'axios'
 
 export const UpdateUser = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { loading, user, error } = useSelector((state: RootState) => state.userDetail)
+  const { loading, selectedUser, error } = useSelector((state: RootState) => state.user)
   const { message } = useSelector((state: RootState) => state.appState)
-  console.log('user', user)
-  const [name, setName] = useState(user?.name)
-  const [email, setEmail] = useState(user?.email)
-  const [role, setRole] = useState(user?.role || 'user')
+  console.log('user', selectedUser)
+  const [name, setName] = useState(selectedUser?.name || '')
+  const [email, setEmail] = useState(selectedUser?.email || '')
+  const [role, setRole] = useState(selectedUser?.role || 'user')
 
   const dispatch = useDispatch()
   const alert = useAlert()
 
   useEffect(() => {
-    dispatch(getUserDetail(id))
+    const getUserDetail = async (id: string) => {
+      let url = `http://localhost:4000/api/v1/admin/user/${id}`
+      const { data } = await axios.get(url, { withCredentials: true })
+      dispatch(setAdminUserDetail(data.user))
+    }
+    getUserDetail(id as string)
   }, [dispatch, id])
 
   useEffect(() => {
-    if (user) {
-      setName(user.name)
-      setEmail(user.email)
-      setRole(user.role || 'user')
+    if (selectedUser) {
+      setName(selectedUser.name)
+      setEmail(selectedUser.email)
+      setRole(selectedUser.role || 'user')
     }
-  }, [user])
+  }, [selectedUser])
 
   useEffect(() => {
     if (message) {
       alert.success(message)
-      dispatch({ type: 'CLEAR_STATUS' })
+      dispatch(clearStatus())
       navigate(`/admin/users`)
     }
   }, [message])
@@ -49,13 +57,29 @@ export const UpdateUser = () => {
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
   }, [error])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    dispatch(updateUser(id, name, email, role))
+    const updateUser = async (id: string, name: string, email: string, role: string) => {
+      let url = `http://localhost:4000/api/v1/admin/user/${id}`
+
+      const userData = {
+        name,
+        email,
+        role
+      }
+      const { data } = await axios.put(url, userData, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true
+      })
+
+      dispatch(updateAdminUser(data.user))
+      dispatch(setSuccess('Updated user successfully'))
+    }
+    updateUser(id as string, name, email, role)
   }
 
   const handleName = (e: React.ChangeEvent<HTMLInputElement>) => {

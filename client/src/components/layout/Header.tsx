@@ -3,18 +3,19 @@ import { Search } from './Search'
 import { useAlert } from 'react-alert'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { logout } from '../../actions/userActions'
+// import { logout } from '../../actions/userActions'
 import { RootState } from '../../store'
+import { logoutUser } from '../../slices/userSlice'
 
 export const Header = () => {
-  const { loading, user, isAuthenticated, error } = useSelector((state: RootState) => state.auth)
+  const { loading, user, isAuthenticated, error } = useSelector((state: RootState) => state.user)
   const { cartItems } = useSelector((state: RootState) => state.cart)
   const navigate = useNavigate()
   const alert = useAlert()
   const dispatch = useDispatch()
 
   const handleLogout = () => {
-    dispatch(logout())
+    dispatch(logoutUser())
     alert.info('Logout successful')
     navigate(`/`)
   }
@@ -61,7 +62,7 @@ export const Header = () => {
                     />
                   ) : (
                     <span className='d-flex align-items-center rounded-circle'>
-                      {user.name.slice(0, 1)}
+                      {user.name?.slice(0, 1)}
                     </span>
                   )}
                 </figure>

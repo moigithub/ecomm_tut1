@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-import { clearError, deleteReview, getProductReviews } from '../../actions/productActions'
+// import { clearError, deleteReview, getProductReviews } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
@@ -11,9 +11,12 @@ import { useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Review } from '../../reducers/productReducers'
 import { CLEAR_STATUS } from '../../constants/user'
+import { clearStatus, setSuccess } from '../../slices/appStateSlice'
+import { deleteProductReview, setProductReviews } from '../../slices/productSlice'
+import axios from 'axios'
 
 export const AdminProductReviews = () => {
-  const { loading, reviews, error } = useSelector((state: RootState) => state.productReviews)
+  const { loading, productReviews, error } = useSelector((state: RootState) => state.product)
   const {
     loading: appLoading,
     message,
@@ -32,21 +35,29 @@ export const AdminProductReviews = () => {
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
     if (message) {
       alert.success(message)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
     }
     if (errorMessage) {
       alert.error(errorMessage)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
     }
   }, [error, errorMessage, message])
 
   const handleDeleteReview = (review: Review) => {
-    dispatch(deleteReview(productId, review._id))
-    dispatch(getProductReviews(productId))
+    const deleteReview = async (productId: string, reviewId: string) => {
+      const { data } = await axios.delete(
+        `http://localhost:4000/api/v1/admin/product/${productId}/reviews/${reviewId}`,
+        { withCredentials: true }
+      )
+      dispatch(deleteProductReview(reviewId))
+      dispatch(setSuccess('Review deleted successfully'))
+    }
+    // dispatch(getProductReviews(productId))
+    deleteReview(productId, review._id)
   }
 
   if (loading || appLoading) {
@@ -81,7 +92,7 @@ export const AdminProductReviews = () => {
         sort: 'asc'
       }
     ],
-    rows: reviews.map(review => {
+    rows: productReviews.map(review => {
       return {
         id: review._id,
         rating: review.rating,
@@ -103,7 +114,14 @@ export const AdminProductReviews = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    dispatch(getProductReviews(productId))
+
+    const getProductReviews = async (id: string) => {
+      let url = `http://localhost:4000/api/v1/product/${id}/reviews`
+      const { data } = await axios.get(url, { withCredentials: true })
+
+      dispatch(setProductReviews(data.reviews))
+    }
+    getProductReviews(productId)
   }
 
   return (
@@ -127,7 +145,7 @@ export const AdminProductReviews = () => {
                     onChange={e => setProductId(e.target.value)}
                   />
                 </div>
-                <button type='submit' className='btn btn-primary w-100 py-2'>
+                <button type='submit' disabled={!productId} className='btn btn-primary w-100 py-2'>
                   Search
                 </button>
               </form>
@@ -136,7 +154,7 @@ export const AdminProductReviews = () => {
 
           <div className='col-12 col-md-10'>
             <h1 className='mt-5'>All Product reviews</h1>
-            {reviews.length > 0 ? (
+            {productReviews.length > 0 ? (
               <MDBDataTable data={data} className='px-3' bordered striped hover></MDBDataTable>
             ) : (
               <p className='mt-5 text-center'>No reviews</p>

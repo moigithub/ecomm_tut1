@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react'
 import { useAlert } from 'react-alert'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
-import { clearError, getProductDetails, updateProduct } from '../../actions/productActions'
+// import { clearError, getProductDetails, updateProduct } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Sidebar } from './Sidebar'
 import { useParams } from 'react-router-dom'
 import { CLEAR_STATUS } from '../../constants/user'
 import { Loader } from '../layout/Loader'
-import { orderDetails, updateOrder } from '../../actions/orderActions'
+// import { orderDetails, updateOrder } from '../../actions/orderActions'
+import { clearStatus } from '../../slices/appStateSlice'
+import axios from 'axios'
+import { setOrderDetail, updateAdminOrder } from '../../slices/orderSlice'
 
 const categories = [
   'Electronics',
@@ -28,7 +31,7 @@ const categories = [
 export const ProcessOrder = () => {
   const { id } = useParams()
 
-  const { loading, order, error } = useSelector((state: RootState) => state.orderDetails)
+  const { loading, order, error } = useSelector((state: RootState) => state.order)
   const { shipping } = useSelector((state: RootState) => state.cart)
   const {
     loading: appLoading,
@@ -43,24 +46,31 @@ export const ProcessOrder = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    dispatch(orderDetails(id))
+    const orderDetails = async (id: string) => {
+      const { data } = await axios.get('http://localhost:4000/api/v1/order/' + id, {
+        headers: { 'content-type': 'application/json' },
+        withCredentials: true
+      })
+      return data
+    }
+    dispatch(setOrderDetail(orderDetails(id as string)))
   }, [dispatch, id])
 
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
 
     if (appError) {
       alert.error(appError)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
     }
 
     if (message) {
       navigate('/admin/orders')
       alert.success('Order updated successfully')
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
     }
   }, [error, appError, message])
 
@@ -68,8 +78,15 @@ export const ProcessOrder = () => {
     e.preventDefault()
 
     const order = { status }
+    const updateOrder = async (id: string, productData: any) => {
+      const { data } = await axios.put(`http://localhost:4000/api/v1/admin/order/${id}`, order, {
+        headers: { 'content-type': 'application/json' },
+        withCredentials: true
+      })
+      return data
+    }
 
-    dispatch(updateOrder(id, order))
+    dispatch(updateAdminOrder(updateOrder(id as string, order)))
   }
 
   if (loading || appLoading) {

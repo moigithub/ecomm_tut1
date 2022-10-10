@@ -22,7 +22,7 @@ export const NewPassword = () => {
   useEffect(() => {
     if (message) {
       alert.success(message)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
       navigate('/me')
     }
   }, [message])

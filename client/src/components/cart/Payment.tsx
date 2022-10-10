@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
 import type {} from 'redux-thunk/extend-redux'
@@ -16,7 +16,8 @@ import {
 import { CheckoutSteps } from './CheckoutSteps'
 import { StripeCardElementOptions, StripeCardNumberElement } from '@stripe/stripe-js'
 import axios from 'axios'
-import { createOrder } from '../../actions/orderActions'
+import { newOrder } from '../../slices/orderSlice'
+// import { createOrder } from '../../actions/orderActions'
 
 export const Payment = () => {
   const stripe = useStripe()
@@ -25,7 +26,7 @@ export const Payment = () => {
   const alert = useAlert()
   const dispatch = useDispatch()
   const { cartItems, shipping } = useSelector((state: RootState) => state.cart)
-  const { user } = useSelector((state: RootState) => state.auth)
+  const { user } = useSelector((state: RootState) => state.user)
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -59,6 +60,7 @@ export const Payment = () => {
       } else {
         if (result?.paymentIntent.status === 'succeeded') {
           const order = {
+            // _id: useId(),
             orderItems: cartItems.map(item => ({
               name: item.name,
               quantity: item.quantity,
@@ -78,8 +80,13 @@ export const Payment = () => {
             shippingPrice: orderInfo.shippingPrice,
             totalPrice: orderInfo.totalPrice,
             paymentInfo: { id: result.paymentIntent.id, status: result.paymentIntent.status }
+            // orderStatus: 'Pending'
           }
-          dispatch(createOrder(order))
+          const { data } = await axios.post('http://localhost:4000/api/v1/order/new', order, {
+            headers: { 'content-type': 'application/json' },
+            withCredentials: true
+          })
+          dispatch(newOrder(data.order))
           navigate('/success')
         }
       }

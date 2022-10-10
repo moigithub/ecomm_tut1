@@ -12,7 +12,7 @@ export const ConfirmOrder = () => {
   const alert = useAlert()
   const dispatch = useDispatch()
   const { shipping, cartItems } = useSelector((state: RootState) => state.cart)
-  const { user } = useSelector((state: RootState) => state.auth)
+  const { user } = useSelector((state: RootState) => state.user)
 
   const handlePayment = (e: React.MouseEvent<HTMLButtonElement>) => {
     const data = {

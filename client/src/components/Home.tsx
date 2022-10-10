@@ -4,13 +4,16 @@ import { useAlert } from 'react-alert'
 import Pagination from 'react-js-pagination'
 import { useParams } from 'react-router-dom'
 import Slider from 'rc-slider'
-import { clearError, getProducts } from '../actions/productActions'
+// import { clearError, getProducts } from '../actions/productActions'
 import { MetaData } from './layout/MetaData'
 import type {} from 'redux-thunk/extend-redux'
 import { RootState } from '../store'
 import { ProductComp } from './product/product'
 import { Loader } from './layout/Loader'
 import 'rc-slider/assets/index.css'
+import axios from 'axios'
+import { setProducts } from '../slices/productSlice'
+import { clearStatus } from '../slices/appStateSlice'
 
 const createSliderWithTooltip = Slider.createSliderWithTooltip
 const Range = createSliderWithTooltip(Slider.Range)
@@ -20,20 +23,40 @@ export const Home = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [category, setCategory] = useState('')
   const [price, setPrice] = useState([1, 1000])
-  const { loading, products, productCount, itemsPerPage, error } = useSelector(
-    (state: RootState) => state.products
-  )
+  const {
+    loading,
+    products = [],
+    productCount,
+    itemsPerPage,
+    error
+  } = useSelector((state: RootState) => state.product)
   const dispatch = useDispatch()
   const alert = useAlert()
 
   useEffect(() => {
-    dispatch(getProducts(currentPage, keyword, price, category))
+    const getProducts = async (
+      page: number,
+      keyword: string,
+      price: number[],
+      category: string
+    ) => {
+      let url = `http://localhost:4000/api/v1/products?page=${page}&keyword=${keyword}&minprice=${price[0]}&maxprice=${price[1]}`
+
+      if (category) {
+        url += `&category=${category}`
+      }
+
+      const { data } = await axios.get(url, { withCredentials: true })
+
+      dispatch(setProducts(data))
+    }
+    getProducts(currentPage, keyword || '', price, category)
   }, [dispatch, currentPage, keyword, price, category])
 
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
   }, [error])
 

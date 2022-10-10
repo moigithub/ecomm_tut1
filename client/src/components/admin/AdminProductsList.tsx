@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-import {
-  clearError,
-  deleteProduct,
-  getAdminProducts,
-  getProducts
-} from '../../actions/productActions'
+// import {
+//   clearError,
+//   deleteProduct,
+//   getAdminProducts,
+//   getProducts
+// } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
@@ -16,9 +16,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Product } from '../../reducers/productReducers'
 import { CLEAR_STATUS } from '../../constants/user'
+import { clearStatus } from '../../slices/appStateSlice'
+import { deleteAdminProduct, setAdminProducts } from '../../slices/productSlice'
+import axios from 'axios'
 
 export const AdminProductsList = () => {
-  const { loading, products, error } = useSelector((state: RootState) => state.adminProducts)
+  const { loading, adminProducts, error } = useSelector((state: RootState) => state.product)
   const {
     loading: appLoading,
     message,
@@ -30,26 +33,41 @@ export const AdminProductsList = () => {
   const alert = useAlert()
 
   useEffect(() => {
-    dispatch(getAdminProducts())
+    const getAdminProducts = async () => {
+      let url = 'http://localhost:4000/api/v1/admin/products'
+      const { data } = await axios.get(url, { withCredentials: true })
+
+      dispatch(setAdminProducts(data))
+    }
+    getAdminProducts()
   }, [dispatch, message])
 
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
     if (message) {
       alert.success(message)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
     }
     if (errorMessage) {
       alert.error(errorMessage)
-      dispatch({ type: CLEAR_STATUS })
+      dispatch(clearStatus())
     }
   }, [error, errorMessage, message])
 
-  const handleDeleteProduct = (product: Product) => {
-    dispatch(deleteProduct(product._id))
+  const handleDeleteProduct = async (product: Product) => {
+    const deleteProduct = async (id: string) => {
+      const { data } = await axios.delete(`http://localhost:4000/api/v1/admin/product/${id}`, {
+        headers: { 'content-type': 'application/json' },
+        withCredentials: true
+      })
+      console.log('delete product', data)
+
+      dispatch(deleteAdminProduct(id))
+    }
+    deleteProduct(product._id)
   }
 
   if (loading || appLoading) {
@@ -84,7 +102,7 @@ export const AdminProductsList = () => {
         sort: 'asc'
       }
     ],
-    rows: products.map(product => {
+    rows: adminProducts.map(product => {
       return {
         id: product._id,
         name: product.name,
@@ -106,7 +124,7 @@ export const AdminProductsList = () => {
       }
     })
   }
-  console.log('data prod', data, products)
+
   return (
     <>
       <MetaData title='All products'></MetaData>

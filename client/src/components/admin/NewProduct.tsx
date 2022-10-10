@@ -1,9 +1,12 @@
+import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { useAlert } from 'react-alert'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { clearError, newProduct } from '../../actions/productActions'
+// import { clearError, newProduct } from '../../actions/productActions'
 import { NEW_PRODUCT_RESET } from '../../constants/product'
+import { clearStatus, setSuccess } from '../../slices/appStateSlice'
+import { addAdminProduct } from '../../slices/productSlice'
 import { RootState } from '../../store'
 import { Sidebar } from './Sidebar'
 
@@ -31,7 +34,7 @@ export const NewProduct = () => {
   const [seller, setSeller] = useState('')
   const [images, setImages] = useState<FileList | null>(null)
   const [imagePreview, setImagePreview] = useState<string[]>([])
-  const { loading, success, error } = useSelector((state: RootState) => state.newProduct)
+  const { loading, message, error } = useSelector((state: RootState) => state.appState)
   const dispatch = useDispatch()
   const alert = useAlert()
   const navigate = useNavigate()
@@ -39,15 +42,15 @@ export const NewProduct = () => {
   useEffect(() => {
     if (error) {
       alert.error(error)
-      dispatch(clearError())
+      dispatch(clearStatus())
     }
 
-    if (success) {
+    if (message) {
       navigate('/admin/products')
-      alert.success('Product created successfully')
-      dispatch({ type: NEW_PRODUCT_RESET })
+      alert.success(message)
+      dispatch(clearStatus())
     }
-  }, [error, success])
+  }, [error, message])
 
   const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -69,7 +72,7 @@ export const NewProduct = () => {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     const product = new FormData()
@@ -87,7 +90,17 @@ export const NewProduct = () => {
       }
     }
 
-    dispatch(newProduct(product))
+    const newProduct = async (productData: any) => {
+      const { data } = await axios.post(
+        `http://localhost:4000/api/v1/admin/product/new`,
+        productData,
+        { headers: { 'content-type': 'multipart/form-data' }, withCredentials: true }
+      )
+      console.log('new product', data)
+      return data.product
+    }
+    dispatch(addAdminProduct(await newProduct(product)))
+    dispatch(setSuccess('Product created successfully'))
   }
 
   return (

@@ -167,10 +167,10 @@ export const userProfile = catchError(async (req, res, next) => {
 export const updateProfile = catchError(async (req, res, next) => {
   const userId = req.user.id
 
-  //TODO: find teh avatar file and delete, replace on db. new file url
   const newData = {
     name: req.body.name,
-    email: req.body.email
+    email: req.body.email,
+    role: req.body.role
   }
 
   // check if user uploaded new avatar image, and delete old one if so
@@ -212,7 +212,7 @@ export const getUser = catchError(async (req, res, next) => {
   const user = await User.findById(req.params.id)
   if (!user) return next(new ErrorHandler('not found', 404))
 
-  return res.status(200).json({ success: true, users: user })
+  return res.status(200).json({ success: true, user })
 })
 
 // PUT /api/v1/admin/user/id
@@ -223,6 +223,25 @@ export const updateUser = catchError(async (req, res, next) => {
     email: req.body.email,
     role: req.body.role
   }
+
+  // check if user uploaded new avatar image, and delete old one if so
+  console.log('file avatar', req.file)
+  if (req.file) {
+    const oldAvatarImage = req.user.avatar.url
+    console.log('trying to delete avatar image', oldAvatarImage)
+    try {
+      fs.unlinkSync('./uploads/' + oldAvatarImage)
+      //file removed
+    } catch (err) {
+      console.error('err removing avatar file', err)
+    }
+
+    newData.avatar = {
+      public_id: req.file.filename,
+      url: 'uploads/' + req.file.filename
+    }
+  }
+
   const user = await User.findByIdAndUpdate(userId, newData, {
     new: true,
     runValidators: false
