@@ -1,26 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
-import type {} from 'redux-thunk/extend-redux'
-import { Link, useParams } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
-import { clearError } from '../../actions/productActions'
+import { Link } from 'react-router-dom'
+
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
 import { clearStatus } from '../../slices/appStateSlice'
 
 export const Profile = () => {
-  const navigate = useNavigate()
-  const { loading, user, isAuthenticated, error } = useSelector((state: RootState) => state.user)
+  const { loading, user, error } = useSelector((state: RootState) => state.user)
   const dispatch = useDispatch()
   const alert = useAlert()
-
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     navigate(`/`)
-  //   }
-  // }, [isAuthenticated])
 
   useEffect(() => {
     if (error) {

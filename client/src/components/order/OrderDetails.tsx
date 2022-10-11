@@ -1,15 +1,13 @@
-import { Fragment, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-// import { clearError } from '../../actions/productActions'
+import { Link, useParams } from 'react-router-dom'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
-// import { orderDetails } from '../../actions/orderActions'
-import { Link, useParams } from 'react-router-dom'
 import { clearStatus } from '../../slices/appStateSlice'
-import axios from 'axios'
 import { setOrderDetail } from '../../slices/orderSlice'
+import { orderDetails } from '../../services/orderService'
 
 export const OrderDetails = () => {
   const { id } = useParams()
@@ -20,15 +18,10 @@ export const OrderDetails = () => {
   const alert = useAlert()
 
   useEffect(() => {
-    const orderDetails = async (id: string) => {
-      const { data } = await axios.get('http://localhost:4000/api/v1/order/' + id, {
-        headers: { 'content-type': 'application/json' },
-        withCredentials: true
-      })
-
-      dispatch(setOrderDetail(data.order))
+    const getData = async () => {
+      dispatch(setOrderDetail(await orderDetails(id as string)))
     }
-    orderDetails(id as string)
+    getData()
   }, [dispatch])
 
   useEffect(() => {

@@ -1,16 +1,12 @@
-import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
-import type {} from 'redux-thunk/extend-redux'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import { Product } from '../../reducers/productReducers'
 import { RootState } from '../../store'
 import { MetaData } from '../layout/MetaData'
-// import { addCartItem, removeCartItem } from '../../actions/cartActions'
 import { CartItem } from '../../reducers/cartReducers'
-import axios from 'axios'
 import { removeCartItem, updateCartItem } from '../../slices/cartSlice'
+import { getProduct } from '../../services/cartService'
 
 export const Cart = () => {
   const navigate = useNavigate()
@@ -18,19 +14,6 @@ export const Cart = () => {
   const dispatch = useDispatch()
   const { cartItems } = useSelector((state: RootState) => state.cart)
 
-  const getProduct = async (id: string, quantity: number) => {
-    const { data } = await axios.get(`http://localhost:4000/api/v1/product/${id}`, {
-      withCredentials: true
-    })
-    return {
-      _id: id,
-      name: data.product.name,
-      price: data.product.price,
-      image: data.product.images[0].url,
-      stock: data.product.stock,
-      quantity
-    }
-  }
   const decreaseQty = async (cartItem: CartItem) => {
     if (cartItem.quantity <= 1) return
 

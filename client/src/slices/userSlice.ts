@@ -64,7 +64,7 @@ export const userSlice = createSlice({
       state.users = state.users.map(user => (user._id = action.payload._id ? action.payload : user))
     },
     deleteAdminUser: (state, action) => {
-      state.users = state.users.filter(user => (user._id = action.payload))
+      state.users = state.users.filter(user => user._id !== action.payload)
     }
   }
 })

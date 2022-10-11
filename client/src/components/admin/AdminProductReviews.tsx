@@ -1,19 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-// import { clearError, deleteReview, getProductReviews } from '../../actions/productActions'
+import { MDBDataTable } from 'mdbreact'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
-import { MDBDataTable } from 'mdbreact'
-
-import { useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Review } from '../../reducers/productReducers'
-import { CLEAR_STATUS } from '../../constants/user'
 import { clearStatus, setSuccess } from '../../slices/appStateSlice'
 import { deleteProductReview, setProductReviews } from '../../slices/productSlice'
-import axios from 'axios'
+import { deleteReview, getProductReviews } from '../../services/productService'
 
 export const AdminProductReviews = () => {
   const { loading, productReviews, error } = useSelector((state: RootState) => state.product)
@@ -23,14 +19,9 @@ export const AdminProductReviews = () => {
     error: errorMessage
   } = useSelector((state: RootState) => state.appState)
   const [productId, setProductId] = useState('')
-  const navigate = useNavigate()
 
   const dispatch = useDispatch()
   const alert = useAlert()
-
-  // useEffect(() => {
-  //   dispatch(getProductReviews())
-  // }, [dispatch, message])
 
   useEffect(() => {
     if (error) {
@@ -47,17 +38,9 @@ export const AdminProductReviews = () => {
     }
   }, [error, errorMessage, message])
 
-  const handleDeleteReview = (review: Review) => {
-    const deleteReview = async (productId: string, reviewId: string) => {
-      const { data } = await axios.delete(
-        `http://localhost:4000/api/v1/admin/product/${productId}/reviews/${reviewId}`,
-        { withCredentials: true }
-      )
-      dispatch(deleteProductReview(reviewId))
-      dispatch(setSuccess('Review deleted successfully'))
-    }
-    // dispatch(getProductReviews(productId))
-    deleteReview(productId, review._id)
+  const handleDeleteReview = async (review: Review) => {
+    dispatch(deleteProductReview(await deleteReview(productId, review._id)))
+    dispatch(setSuccess('Review deleted successfully'))
   }
 
   if (loading || appLoading) {
@@ -112,16 +95,10 @@ export const AdminProductReviews = () => {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const getProductReviews = async (id: string) => {
-      let url = `http://localhost:4000/api/v1/product/${id}/reviews`
-      const { data } = await axios.get(url, { withCredentials: true })
-
-      dispatch(setProductReviews(data.reviews))
-    }
-    getProductReviews(productId)
+    dispatch(setProductReviews(await getProductReviews(productId)))
   }
 
   return (

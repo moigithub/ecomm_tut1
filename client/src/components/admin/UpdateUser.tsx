@@ -1,20 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
-
-import type {} from 'redux-thunk/extend-redux'
-
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-// import { clearError } from '../../actions/productActions'
-// import { getUserDetail, updateUser } from '../../actions/userActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
 import { Sidebar } from './Sidebar'
 import { clearStatus, setSuccess } from '../../slices/appStateSlice'
 import { setAdminUserDetail, updateAdminUser } from '../../slices/userSlice'
-import axios from 'axios'
+import { getUserDetail, updateUser } from '../../services/userService'
 
 export const UpdateUser = () => {
   const { id } = useParams()
@@ -30,12 +25,10 @@ export const UpdateUser = () => {
   const alert = useAlert()
 
   useEffect(() => {
-    const getUserDetail = async (id: string) => {
-      let url = `http://localhost:4000/api/v1/admin/user/${id}`
-      const { data } = await axios.get(url, { withCredentials: true })
-      dispatch(setAdminUserDetail(data.user))
+    const getData = async () => {
+      dispatch(setAdminUserDetail(await getUserDetail(id as string)))
     }
-    getUserDetail(id as string)
+    getData()
   }, [dispatch, id])
 
   useEffect(() => {
@@ -61,25 +54,11 @@ export const UpdateUser = () => {
     }
   }, [error])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const updateUser = async (id: string, name: string, email: string, role: string) => {
-      let url = `http://localhost:4000/api/v1/admin/user/${id}`
 
-      const userData = {
-        name,
-        email,
-        role
-      }
-      const { data } = await axios.put(url, userData, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true
-      })
-
-      dispatch(updateAdminUser(data.user))
-      dispatch(setSuccess('Updated user successfully'))
-    }
-    updateUser(id as string, name, email, role)
+    dispatch(updateAdminUser(await updateUser(id as string, name, email, role)))
+    dispatch(setSuccess('Updated user successfully'))
   }
 
   const handleName = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,20 +1,16 @@
 import { useEffect } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-// import { clearError } from '../../actions/productActions'
+import { MDBDataTable } from 'mdbreact'
+import { Link } from 'react-router-dom'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
-import { MDBDataTable } from 'mdbreact'
-
-import { Link, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
-import { CLEAR_STATUS } from '../../constants/user'
-// import { deleteUser, loadAllUsers } from '../../actions/userActions'
 import { User } from '../../reducers/userReducers'
 import { clearStatus } from '../../slices/appStateSlice'
 import { deleteAdminUser, setAdminUsers } from '../../slices/userSlice'
-import axios from 'axios'
+import { deleteUser, getUsers } from '../../services/userService'
 
 export const AdminUserList = () => {
   const { loading, users, error } = useSelector((state: RootState) => state.user)
@@ -23,17 +19,13 @@ export const AdminUserList = () => {
     message,
     error: errorMessage
   } = useSelector((state: RootState) => state.appState)
-  const navigate = useNavigate()
 
   const dispatch = useDispatch()
   const alert = useAlert()
 
   useEffect(() => {
     const loadAllUsers = async () => {
-      let url = `http://localhost:4000/api/v1/admin/users`
-      const { data } = await axios.get(url, { withCredentials: true })
-      console.log('users', data)
-      dispatch(setAdminUsers(data.users))
+      dispatch(setAdminUsers(await getUsers()))
     }
     loadAllUsers()
   }, [dispatch, message])
@@ -53,17 +45,8 @@ export const AdminUserList = () => {
     }
   }, [error, errorMessage, message])
 
-  const handleDeleteUser = (user: User) => {
-    const deleteUser = async (id: string) => {
-      let url = `http://localhost:4000/api/v1/admin/user/${id}`
-
-      const { data } = await axios.delete(url, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true
-      })
-      return data
-    }
-    dispatch(deleteAdminUser(deleteUser(user._id)))
+  const handleDeleteUser = async (user: User) => {
+    dispatch(deleteAdminUser(await deleteUser(user._id)))
   }
 
   if (loading || appLoading) {

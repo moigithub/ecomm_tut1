@@ -4,16 +4,15 @@ import { useAlert } from 'react-alert'
 import Pagination from 'react-js-pagination'
 import { useParams } from 'react-router-dom'
 import Slider from 'rc-slider'
-// import { clearError, getProducts } from '../actions/productActions'
 import { MetaData } from './layout/MetaData'
 import type {} from 'redux-thunk/extend-redux'
 import { RootState } from '../store'
 import { ProductComp } from './product/product'
 import { Loader } from './layout/Loader'
 import 'rc-slider/assets/index.css'
-import axios from 'axios'
 import { setProducts } from '../slices/productSlice'
 import { clearStatus } from '../slices/appStateSlice'
+import { getProducts } from '../services/productService'
 
 const createSliderWithTooltip = Slider.createSliderWithTooltip
 const Range = createSliderWithTooltip(Slider.Range)
@@ -34,23 +33,10 @@ export const Home = () => {
   const alert = useAlert()
 
   useEffect(() => {
-    const getProducts = async (
-      page: number,
-      keyword: string,
-      price: number[],
-      category: string
-    ) => {
-      let url = `http://localhost:4000/api/v1/products?page=${page}&keyword=${keyword}&minprice=${price[0]}&maxprice=${price[1]}`
-
-      if (category) {
-        url += `&category=${category}`
-      }
-
-      const { data } = await axios.get(url, { withCredentials: true })
-
-      dispatch(setProducts(data))
+    const getData = async () => {
+      dispatch(setProducts(await getProducts(currentPage, keyword || '', price, category)))
     }
-    getProducts(currentPage, keyword || '', price, category)
+    getData()
   }, [dispatch, currentPage, keyword, price, category])
 
   useEffect(() => {

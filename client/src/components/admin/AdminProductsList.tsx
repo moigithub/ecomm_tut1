@@ -1,24 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-// import {
-//   clearError,
-//   deleteProduct,
-//   getAdminProducts,
-//   getProducts
-// } from '../../actions/productActions'
+import { Link } from 'react-router-dom'
+import { MDBDataTable } from 'mdbreact'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
-import { MDBDataTable } from 'mdbreact'
-
-import { Link, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Product } from '../../reducers/productReducers'
-import { CLEAR_STATUS } from '../../constants/user'
 import { clearStatus } from '../../slices/appStateSlice'
 import { deleteAdminProduct, setAdminProducts } from '../../slices/productSlice'
-import axios from 'axios'
+import { deleteProduct, getAdminProducts } from '../../services/productService'
 
 export const AdminProductsList = () => {
   const { loading, adminProducts, error } = useSelector((state: RootState) => state.product)
@@ -27,19 +19,15 @@ export const AdminProductsList = () => {
     message,
     error: errorMessage
   } = useSelector((state: RootState) => state.appState)
-  const navigate = useNavigate()
 
   const dispatch = useDispatch()
   const alert = useAlert()
 
   useEffect(() => {
-    const getAdminProducts = async () => {
-      let url = 'http://localhost:4000/api/v1/admin/products'
-      const { data } = await axios.get(url, { withCredentials: true })
-
-      dispatch(setAdminProducts(data))
+    const getData = async () => {
+      dispatch(setAdminProducts(await getAdminProducts()))
     }
-    getAdminProducts()
+    getData()
   }, [dispatch, message])
 
   useEffect(() => {
@@ -58,16 +46,7 @@ export const AdminProductsList = () => {
   }, [error, errorMessage, message])
 
   const handleDeleteProduct = async (product: Product) => {
-    const deleteProduct = async (id: string) => {
-      const { data } = await axios.delete(`http://localhost:4000/api/v1/admin/product/${id}`, {
-        headers: { 'content-type': 'application/json' },
-        withCredentials: true
-      })
-      console.log('delete product', data)
-
-      dispatch(deleteAdminProduct(id))
-    }
-    deleteProduct(product._id)
+    dispatch(deleteAdminProduct(await deleteProduct(product._id)))
   }
 
   if (loading || appLoading) {

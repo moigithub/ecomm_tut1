@@ -1,10 +1,8 @@
-import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { useAlert } from 'react-alert'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-// import { clearError, newProduct } from '../../actions/productActions'
-import { NEW_PRODUCT_RESET } from '../../constants/product'
+import { newProduct } from '../../services/productService'
 import { clearStatus, setSuccess } from '../../slices/appStateSlice'
 import { addAdminProduct } from '../../slices/productSlice'
 import { RootState } from '../../store'
@@ -90,15 +88,6 @@ export const NewProduct = () => {
       }
     }
 
-    const newProduct = async (productData: any) => {
-      const { data } = await axios.post(
-        `http://localhost:4000/api/v1/admin/product/new`,
-        productData,
-        { headers: { 'content-type': 'multipart/form-data' }, withCredentials: true }
-      )
-      console.log('new product', data)
-      return data.product
-    }
     dispatch(addAdminProduct(await newProduct(product)))
     dispatch(setSuccess('Product created successfully'))
   }

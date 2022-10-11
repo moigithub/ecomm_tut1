@@ -40,6 +40,9 @@ import { AdminUserList } from './components/admin/AdminUserList'
 import { UpdateUser } from './components/admin/UpdateUser'
 import { AdminProductReviews } from './components/admin/AdminProductReviews'
 import { setUserMe } from './slices/userSlice'
+import { Container } from './components/layout/Container'
+import { userMe } from './services/userService'
+import { getStripeApiKey } from './services/cartService'
 
 const options = {
   position: positions.BOTTOM_CENTER,
@@ -51,81 +54,68 @@ function App() {
   const [stripeApiKey, setStripeApiKey] = useState('')
 
   useEffect(() => {
-    if (store.getState().user.user) {
-      const loadUser = async () => {
-        let url = `http://localhost:4000/api/v1/me`
-        const { data } = await axios.get(url, { withCredentials: true })
-
-        store.dispatch(data)
+    const getData = async () => {
+      if (store.getState().user.user) {
+        store.dispatch(await userMe())
       }
-      loadUser()
-    }
 
-    async function getStripeApiKey() {
-      const { data } = await axios.get('http://localhost:4000/api/v1/stripeapi', {
-        withCredentials: true
-      })
-      console.log('stripe key', data)
-      setStripeApiKey(data.stripe)
+      setStripeApiKey(await getStripeApiKey())
     }
-
-    getStripeApiKey()
+    getData()
   }, [])
 
   return (
     <Provider store={store}>
       <AlertProvider template={AlertTemplate} {...options}>
-        <BrowserRouter>
-          <div className='App'>
-            <Header></Header>
-            <div className='container'>
-              <Routes>
-                <Route path='/' element={<Home />} />
-                <Route path='/search/:keyword' element={<Home />} />
-                <Route path='/product/:id' element={<ProductDetails />} />
-                <Route path='/login' element={<Login />} />
-                <Route path='/cart' element={<Cart />} />
+        <div className='App'>
+          <Header />
 
-                <Route element={<ProtectedRoute />}>
-                  <Route path='/me' element={<Profile />} />
-                  <Route path='/me/edit' element={<UpdateProfile />} />
-                  <Route path='/password/update' element={<UpdatePassword />} />
-                  <Route path='/shipping' element={<Shipping />} />
-                  <Route path='/order/confirm' element={<ConfirmOrder />} />
-                  <Route path='/orders/me' element={<OrderList />} />
-                  <Route path='/order/:id' element={<OrderDetails />} />
-                  <Route path='/success' element={<OrderSuccess />} />
-                  {stripeApiKey && (
-                    <Route
-                      path='/payment'
-                      element={
-                        <Elements stripe={loadStripe(stripeApiKey)}>
-                          <Payment />
-                        </Elements>
-                      }
-                    />
-                  )}
-                </Route>
-                <Route path='/register' element={<Register />} />
-                <Route path='/password/forgot' element={<ForgotPassword />} />
-              </Routes>
-            </div>
-            <Routes>
-              <Route element={<ProtectedRoute isAdmin />}>
-                <Route path='/dashboard' element={<Dashboard />} />
-                <Route path='/admin/products' element={<AdminProductsList />} />
-                <Route path='/admin/products/new' element={<NewProduct />} />
-                <Route path='/admin/products/:id' element={<UpdateProduct />} />
-                <Route path='/admin/order/:id' element={<ProcessOrder />} />
-                <Route path='/admin/orders' element={<AdminOrderList />} />
-                <Route path='/admin/users' element={<AdminUserList />} />
-                <Route path='/admin/reviews' element={<AdminProductReviews />} />
-                <Route path='/admin/user/:id' element={<UpdateUser />} />
+          <Routes>
+            <Route element={<Container />}>
+              <Route path='/' element={<Home />} />
+              <Route path='/search/:keyword' element={<Home />} />
+              <Route path='/product/:id' element={<ProductDetails />} />
+              <Route path='/login' element={<Login />} />
+              <Route path='/cart' element={<Cart />} />
+
+              <Route element={<ProtectedRoute />}>
+                <Route path='/me' element={<Profile />} />
+                <Route path='/me/edit' element={<UpdateProfile />} />
+                <Route path='/password/update' element={<UpdatePassword />} />
+                <Route path='/shipping' element={<Shipping />} />
+                <Route path='/order/confirm' element={<ConfirmOrder />} />
+                <Route path='/orders/me' element={<OrderList />} />
+                <Route path='/order/:id' element={<OrderDetails />} />
+                <Route path='/success' element={<OrderSuccess />} />
+                {stripeApiKey && (
+                  <Route
+                    path='/payment'
+                    element={
+                      <Elements stripe={loadStripe(stripeApiKey)}>
+                        <Payment />
+                      </Elements>
+                    }
+                  />
+                )}
               </Route>
-            </Routes>
-          </div>
-          <Footer></Footer>
-        </BrowserRouter>{' '}
+              <Route path='/register' element={<Register />} />
+              <Route path='/password/forgot' element={<ForgotPassword />} />
+            </Route>
+
+            <Route element={<ProtectedRoute isAdmin />}>
+              <Route path='/dashboard' element={<Dashboard />} />
+              <Route path='/admin/products' element={<AdminProductsList />} />
+              <Route path='/admin/products/new' element={<NewProduct />} />
+              <Route path='/admin/products/:id' element={<UpdateProduct />} />
+              <Route path='/admin/order/:id' element={<ProcessOrder />} />
+              <Route path='/admin/orders' element={<AdminOrderList />} />
+              <Route path='/admin/users' element={<AdminUserList />} />
+              <Route path='/admin/reviews' element={<AdminProductReviews />} />
+              <Route path='/admin/user/:id' element={<UpdateUser />} />
+            </Route>
+          </Routes>
+        </div>
+        <Footer></Footer>
       </AlertProvider>
     </Provider>
   )

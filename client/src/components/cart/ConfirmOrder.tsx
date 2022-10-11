@@ -1,6 +1,5 @@
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
-import type {} from 'redux-thunk/extend-redux'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { RootState } from '../../store'
@@ -10,7 +9,6 @@ import { CheckoutSteps } from './CheckoutSteps'
 export const ConfirmOrder = () => {
   const navigate = useNavigate()
   const alert = useAlert()
-  const dispatch = useDispatch()
   const { shipping, cartItems } = useSelector((state: RootState) => state.cart)
   const { user } = useSelector((state: RootState) => state.user)
 

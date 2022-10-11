@@ -1,20 +1,16 @@
 import { useEffect } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-// import { clearError, getAdminOrders } from '../../actions/productActions'
+import { Link } from 'react-router-dom'
+import { MDBDataTable } from 'mdbreact'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
-import { MDBDataTable } from 'mdbreact'
-
-import { Link, useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
-import { CLEAR_STATUS } from '../../constants/user'
 import { Order } from '../../reducers/orderReducer'
-// import { deleteOrder } from '../../actions/orderActions'
 import { deleteAdminOrder, setAdminOrders } from '../../slices/orderSlice'
-import axios from 'axios'
 import { clearStatus } from '../../slices/appStateSlice'
+import { getOrders } from '../../services/orderService'
 
 export const AdminOrderList = () => {
   const { loading, orders, error } = useSelector((state: RootState) => state.order)
@@ -23,18 +19,15 @@ export const AdminOrderList = () => {
     message,
     error: errorMessage
   } = useSelector((state: RootState) => state.appState)
-  const navigate = useNavigate()
 
   const dispatch = useDispatch()
   const alert = useAlert()
 
   useEffect(() => {
-    const getOrders = async () => {
-      let url = 'http://localhost:4000/api/v1/admin/orders'
-      const { data } = await axios.get(url, { withCredentials: true })
-      return data
+    const getData = async () => {
+      dispatch(setAdminOrders(await getOrders()))
     }
-    dispatch(setAdminOrders(getOrders()))
+    getData()
   }, [dispatch, message])
 
   useEffect(() => {

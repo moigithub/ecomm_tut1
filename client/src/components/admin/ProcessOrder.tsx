@@ -2,16 +2,13 @@ import { useEffect, useState } from 'react'
 import { useAlert } from 'react-alert'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
-// import { clearError, getProductDetails, updateProduct } from '../../actions/productActions'
+import { useParams } from 'react-router-dom'
 import { RootState } from '../../store'
 import { Sidebar } from './Sidebar'
-import { useParams } from 'react-router-dom'
-import { CLEAR_STATUS } from '../../constants/user'
 import { Loader } from '../layout/Loader'
-// import { orderDetails, updateOrder } from '../../actions/orderActions'
 import { clearStatus } from '../../slices/appStateSlice'
-import axios from 'axios'
 import { setOrderDetail, updateAdminOrder } from '../../slices/orderSlice'
+import { orderDetails, updateOrder } from '../../services/orderService'
 
 const categories = [
   'Electronics',
@@ -46,14 +43,10 @@ export const ProcessOrder = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const orderDetails = async (id: string) => {
-      const { data } = await axios.get('http://localhost:4000/api/v1/order/' + id, {
-        headers: { 'content-type': 'application/json' },
-        withCredentials: true
-      })
-      return data
+    const getData = async () => {
+      dispatch(setOrderDetail(await orderDetails(id as string)))
     }
-    dispatch(setOrderDetail(orderDetails(id as string)))
+    getData()
   }, [dispatch, id])
 
   useEffect(() => {
@@ -74,19 +67,12 @@ export const ProcessOrder = () => {
     }
   }, [error, appError, message])
 
-  const handleUpdateOrder = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleUpdateOrder = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault()
 
     const order = { status }
-    const updateOrder = async (id: string, productData: any) => {
-      const { data } = await axios.put(`http://localhost:4000/api/v1/admin/order/${id}`, order, {
-        headers: { 'content-type': 'application/json' },
-        withCredentials: true
-      })
-      return data
-    }
 
-    dispatch(updateAdminOrder(updateOrder(id as string, order)))
+    dispatch(updateAdminOrder(await updateOrder(id as string, order)))
   }
 
   if (loading || appLoading) {

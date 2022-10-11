@@ -1,13 +1,12 @@
-import axios from 'axios'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { getOrders } from '../../services/orderService'
+import { getAdminProducts } from '../../services/productService'
+import { getUsers } from '../../services/userService'
 import { setAdminOrders } from '../../slices/orderSlice'
 import { setAdminProducts } from '../../slices/productSlice'
 import { setAdminUsers } from '../../slices/userSlice'
-// import { getAdminOrders, getAdminProducts } from '../../actions/productActions'
-// import { loadAllUsers } from '../../actions/userActions'
-
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { Sidebar } from './Sidebar'
@@ -23,26 +22,13 @@ export const Dashboard = () => {
   )
 
   useEffect(() => {
-    const getOrders = async () => {
-      let url = 'http://localhost:4000/api/v1/admin/orders'
-      const { data } = await axios.get(url, { withCredentials: true })
-      dispatch(setAdminOrders(data))
-    }
-    const getProducts = async () => {
-      let url = 'http://localhost:4000/api/v1/admin/products'
-      const { data } = await axios.get(url, { withCredentials: true })
-      dispatch(setAdminProducts(data))
-    }
-    const getUsers = async () => {
-      let url = `http://localhost:4000/api/v1/admin/users`
-
-      const { data } = await axios.get(url, { withCredentials: true })
-      dispatch(setAdminUsers(data.users))
+    const getData = async () => {
+      dispatch(setAdminOrders(await getOrders()))
+      dispatch(setAdminProducts(await getAdminProducts()))
+      dispatch(setAdminUsers(await getUsers()))
     }
 
-    getProducts()
-    getUsers()
-    getOrders()
+    getData()
   }, [dispatch])
 
   if (loading) {

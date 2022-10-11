@@ -1,19 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
-import type {} from 'redux-thunk/extend-redux'
 import { useParams } from 'react-router-dom'
 import { Carousel } from 'react-bootstrap'
-// import { addCartItem } from '../../actions/cartActions'
-// import { getProductDetails, clearStatus, newReview } from '../../actions/productActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
-import { REVIEW_RESET } from '../../constants/product.js'
 import { clearStatus, setSuccess } from '../../slices/appStateSlice'
 import { addProductReview, setProductDetail } from '../../slices/productSlice'
-import axios from 'axios'
 import { updateCartItem } from '../../slices/cartSlice'
+import { getProduct, sendReview } from '../../services/productService'
 
 export const ProductDetails = () => {
   const { id } = useParams()
@@ -27,20 +23,18 @@ export const ProductDetails = () => {
   const [hoverStar, setRatingHover] = useState(0)
   const [comment, setComment] = useState('')
 
-  const getProduct = async (id: string, quantity?: number) => {
-    const { data } = await axios.get(`http://localhost:4000/api/v1/product/${id}`, {
-      withCredentials: true
-    })
+  const getProductDetail = async (id: string, quantity?: number) => {
+    const data = await getProduct(id)
     return {
-      ...data.product,
-      image: data.product.images[0].url,
+      ...data,
+      image: data.images[0].url,
       quantity
     }
   }
 
   useEffect(() => {
     ;(async () => {
-      dispatch(setProductDetail(await getProduct(id as string)))
+      dispatch(setProductDetail(await getProductDetail(id as string)))
     })()
   }, [dispatch, id])
 
@@ -78,7 +72,7 @@ export const ProductDetails = () => {
 
   const addToCart = async () => {
     console.log('adding to card', id)
-    dispatch(updateCartItem(await getProduct(id as string, count)))
+    dispatch(updateCartItem(await getProductDetail(id as string, count)))
   }
 
   const setCurrentRatings = (star: number) => () => {
@@ -86,20 +80,8 @@ export const ProductDetails = () => {
   }
 
   const submitReviewHandler = async () => {
-    const sendReview = async (id: string, rating: number, comment: string) => {
-      const { data } = await axios.post(
-        `http://localhost:4000/api/v1/product/${id}/review`,
-        {
-          rating,
-          comment
-        },
-        { headers: { 'content-type': 'application/json' }, withCredentials: true }
-      )
-
-      dispatch(addProductReview(data.product))
-      dispatch(setSuccess('Review sent successfully'))
-    }
-    sendReview(id as string, rating, comment)
+    dispatch(addProductReview(await sendReview(id as string, rating, comment)))
+    dispatch(setSuccess('Review sent successfully'))
   }
 
   if (loading) {

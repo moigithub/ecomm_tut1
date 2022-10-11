@@ -1,23 +1,20 @@
-import { useEffect, useId, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
-import type {} from 'redux-thunk/extend-redux'
 import { useNavigate } from 'react-router-dom'
-import { RootState } from '../../store'
-import { MetaData } from '../layout/MetaData'
 import {
-  CardElement,
   useStripe,
   useElements,
   CardNumberElement,
   CardExpiryElement,
   CardCvcElement
 } from '@stripe/react-stripe-js'
-import { CheckoutSteps } from './CheckoutSteps'
 import { StripeCardElementOptions, StripeCardNumberElement } from '@stripe/stripe-js'
-import axios from 'axios'
+import { CheckoutSteps } from './CheckoutSteps'
+import { RootState } from '../../store'
+import { MetaData } from '../layout/MetaData'
 import { newOrder } from '../../slices/orderSlice'
-// import { createOrder } from '../../actions/orderActions'
+import { getPaymentData } from '../../services/cartService'
+import { createOrder } from '../../services/orderService'
 
 export const Payment = () => {
   const stripe = useStripe()
@@ -39,10 +36,7 @@ export const Payment = () => {
     const paymentData = { amount: Math.round(orderInfo.totalPrice * 100) }
 
     try {
-      const res = await axios.post('http://localhost:4000/api/v1/payment/process', paymentData, {
-        headers: { 'content-type': 'application/json' },
-        withCredentials: true
-      })
+      const res = await getPaymentData(paymentData)
 
       const clientSecret = res.data.client_secret
       const result = await stripe?.confirmCardPayment(clientSecret, {
@@ -82,11 +76,8 @@ export const Payment = () => {
             paymentInfo: { id: result.paymentIntent.id, status: result.paymentIntent.status }
             // orderStatus: 'Pending'
           }
-          const { data } = await axios.post('http://localhost:4000/api/v1/order/new', order, {
-            headers: { 'content-type': 'application/json' },
-            withCredentials: true
-          })
-          dispatch(newOrder(data.order))
+
+          dispatch(newOrder(await createOrder(order)))
           navigate('/success')
         }
       }

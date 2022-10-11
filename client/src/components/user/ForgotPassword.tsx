@@ -6,10 +6,9 @@ import type {} from 'redux-thunk/extend-redux'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { useNavigate } from 'react-router-dom'
-import { CLEAR_STATUS } from '../../constants/user'
 import { forgotPassword } from '../../slices/userSlice'
-import axios from 'axios'
 import { clearStatus } from '../../slices/appStateSlice'
+import { forgotPwd } from '../../services/userService'
 // import { forgotPassword } from '../../actions/userActions'
 
 export const ForgotPassword = () => {
@@ -28,19 +27,10 @@ export const ForgotPassword = () => {
     }
   }, [message])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const forgotPwd = async (email: string) => {
-      let url = `http://localhost:4000/api/v1/forgotPassword`
 
-      const { data } = await axios.post(
-        url,
-        { email },
-        { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
-      )
-      dispatch(forgotPassword(data))
-    }
-    forgotPwd(email)
+    dispatch(forgotPassword(await forgotPwd(email)))
   }
 
   const handleEmail = (e: React.ChangeEvent<HTMLInputElement>) => {

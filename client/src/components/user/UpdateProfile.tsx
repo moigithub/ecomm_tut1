@@ -1,23 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
-
-import type {} from 'redux-thunk/extend-redux'
-
-import { Link, useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-// import { clearError } from '../../actions/productActions'
-// import { updateUser } from '../../actions/userActions'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
 import { clearStatus, setError, setSuccess } from '../../slices/appStateSlice'
-import { updateAdminUser } from '../../slices/userSlice'
-import axios from 'axios'
+import { setUserMe } from '../../slices/userSlice'
+import { updateUser } from '../../services/userService'
 
 export const UpdateProfile = () => {
   const navigate = useNavigate()
-  const { loading, user, isAuthenticated, error } = useSelector((state: RootState) => state.user)
+  const { loading, user, error } = useSelector((state: RootState) => state.user)
   const { message } = useSelector((state: RootState) => state.appState)
   const [name, setName] = useState(user?.name || '')
   const [email, setEmail] = useState(user?.email || '')
@@ -29,12 +23,6 @@ export const UpdateProfile = () => {
 
   const dispatch = useDispatch()
   const alert = useAlert()
-
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     navigate(`/`)
-  //   }
-  // }, [isAuthenticated])
 
   useEffect(() => {
     if (message) {
@@ -51,33 +39,15 @@ export const UpdateProfile = () => {
     }
   }, [error])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const updateUser = async (id: string, name: string, email: string, role: string) => {
-      let url = `http://localhost:4000/api/v1/admin/user/${id}`
 
-      const formData = new FormData()
-      formData.set('name', name)
-      formData.set('email', email)
-      formData.set('role', role)
-
-      if (avatar) {
-        formData.set('avatar', avatar)
-      }
-
-      try {
-        const { data } = await axios.put(url, formData, {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true
-        })
-
-        dispatch(updateAdminUser(data.user))
-        dispatch(setSuccess('Update successfully'))
-      } catch (error: any) {
-        dispatch(setError(error.response.data.message))
-      }
+    try {
+      dispatch(setUserMe(await updateUser(user?._id as string, name, email, role, avatar)))
+      dispatch(setSuccess('Update successfully'))
+    } catch (error: any) {
+      dispatch(setError(error.response.data.message))
     }
-    updateUser(user?._id as string, name, email, role)
   }
 
   const handleName = (e: React.ChangeEvent<HTMLInputElement>) => {

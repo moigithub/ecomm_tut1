@@ -1,16 +1,14 @@
 import { useEffect } from 'react'
 import { useAlert } from 'react-alert'
 import { useSelector, useDispatch } from 'react-redux'
-// import { clearError } from '../../actions/productActions'
+import { MDBDataTable } from 'mdbreact'
+import { Link } from 'react-router-dom'
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
-import { MDBDataTable } from 'mdbreact'
-// import { myOrders } from '../../actions/orderActions'
-import { Link } from 'react-router-dom'
 import { clearStatus } from '../../slices/appStateSlice'
-import axios from 'axios'
 import { setOrders } from '../../slices/orderSlice'
+import { getMyOrders } from '../../services/orderService'
 
 export const OrderList = () => {
   const { loading, orders, error } = useSelector((state: RootState) => state.order)
@@ -18,15 +16,10 @@ export const OrderList = () => {
   const alert = useAlert()
 
   useEffect(() => {
-    const getOrders = async () => {
-      const { data } = await axios.get('http://localhost:4000/api/v1/orders/me', {
-        headers: { 'content-type': 'application/json' },
-        withCredentials: true
-      })
-      console.log('orders', data)
-      dispatch(setOrders(data))
+    const getData = async () => {
+      dispatch(setOrders(await getMyOrders()))
     }
-    getOrders()
+    getData()
   }, [dispatch])
 
   useEffect(() => {

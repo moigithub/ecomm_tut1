@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
-import { MetaData } from './layout/MetaData'
-import type {} from 'redux-thunk/extend-redux'
-import { RootState } from '../store'
-import { Loader } from './layout/Loader'
-import { useParams } from 'react-router-dom'
-import { clearError, updatePassword } from '../actions/userActions'
 import { useNavigate } from 'react-router-dom'
-import { CLEAR_STATUS } from '../constants/user'
+
+import { clearStatus, setSuccess } from '../../slices/appStateSlice'
+import { updatePwd } from '../../services/userService'
+import { updatePassword } from '../../slices/userSlice'
+import { RootState } from '../../store'
+import { MetaData } from '../layout/MetaData'
 
 export const NewPassword = () => {
   const navigate = useNavigate()
@@ -27,9 +26,10 @@ export const NewPassword = () => {
     }
   }, [message])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    dispatch(updatePassword(confirmPassword, password))
+    dispatch(updatePassword(await updatePwd(confirmPassword, password)))
+    dispatch(setSuccess('Password updated successfully'))
   }
 
   const handleConfirmPassword = (e: React.ChangeEvent<HTMLInputElement>) => {

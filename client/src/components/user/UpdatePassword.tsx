@@ -1,20 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
-import type {} from 'redux-thunk/extend-redux'
-import { useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-// import { updatePassword } from '../../actions/userActions'
-// import { CLEAR_STATUS } from '../../constants/user'
 import { RootState } from '../../store'
 import { MetaData } from '../layout/MetaData'
 import { updatePassword } from '../../slices/userSlice'
-import axios from 'axios'
 import { clearStatus, setError, setSuccess } from '../../slices/appStateSlice'
+import { savePassword } from '../../services/userService'
 
 export const UpdatePassword = () => {
   const navigate = useNavigate()
-  const { id } = useParams()
   const [oldPassword, setOldPassword] = useState('')
   const [password, setPassword] = useState('')
 
@@ -35,27 +30,16 @@ export const UpdatePassword = () => {
     }
   }, [message, error])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const setPassword = async (oldPassword: string, password: string) => {
-      let url = `http://localhost:4000/api/v1/password/update`
-
-      try {
-        const { data } = await axios.post(
-          url,
-          { oldPassword, password },
-          { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
-        )
-
-        dispatch(updatePassword(data))
-        dispatch(setSuccess('Password updated successfully'))
-      } catch (error: any) {
-        console.error('error', error.response.data.message)
-        dispatch(setError(error.response.data.message))
-      }
+    try {
+      dispatch(updatePassword(await savePassword(oldPassword, password)))
+      dispatch(setSuccess('Password updated successfully'))
+    } catch (error: any) {
+      console.error('error', error.response.data.message)
+      dispatch(setError(error.response.data.message))
     }
-    setPassword(oldPassword, password)
   }
 
   const handleOldPassword = (e: React.ChangeEvent<HTMLInputElement>) => {

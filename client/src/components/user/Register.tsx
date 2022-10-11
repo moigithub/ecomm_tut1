@@ -1,28 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAlert } from 'react-alert'
-import type {} from 'redux-thunk/extend-redux'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-// import { clearError } from '../../actions/productActions'
-// import { registerUser } from '../../actions/userActions'
+
 import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
 import { clearStatus } from '../../slices/appStateSlice'
-import axios from 'axios'
 import { registerUser } from '../../slices/userSlice'
+import { register } from '../../services/userService'
 
 export const Register = () => {
   const navigate = useNavigate()
-  const { id } = useParams()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [avatarPreview, setAvatarPreview] = useState<string | ArrayBuffer | null>(null)
   const [avatar, setAvatar] = useState<File | null>(null)
 
-  const { loading, user, isAuthenticated, error } = useSelector((state: RootState) => state.user)
+  const { loading, isAuthenticated, error } = useSelector((state: RootState) => state.user)
   const dispatch = useDispatch()
   const alert = useAlert()
 
@@ -39,23 +36,10 @@ export const Register = () => {
     }
   }, [error])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const register = async (name: string, email: string, password: string, avatar: File) => {
-      let url = `http://localhost:4000/api/v1/register`
 
-      const formData = new FormData()
-      formData.set('name', name)
-      formData.set('email', email)
-      formData.set('password', password)
-      formData.set('avatar', avatar)
-      const { data } = await axios.post(url, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true
-      })
-      dispatch(registerUser(data.user))
-    }
-    register(name, email, password, avatar as File)
+    dispatch(registerUser(await register(name, email, password, avatar as File)))
   }
 
   const handleName = (e: React.ChangeEvent<HTMLInputElement>) => {

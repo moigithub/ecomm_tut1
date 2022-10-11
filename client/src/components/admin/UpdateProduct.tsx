@@ -2,14 +2,12 @@ import { useEffect, useState } from 'react'
 import { useAlert } from 'react-alert'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-// import { clearError, getProductDetails, updateProduct } from '../../actions/productActions'
+import { useParams } from 'react-router-dom'
 import { RootState } from '../../store'
 import { Sidebar } from './Sidebar'
-import { useParams } from 'react-router-dom'
-import { CLEAR_STATUS } from '../../constants/user'
 import { clearStatus, setSuccess } from '../../slices/appStateSlice'
-import axios from 'axios'
 import { setProductDetail, updateAdminProduct } from '../../slices/productSlice'
+import { getProduct, updateProduct } from '../../services/productService'
 
 const categories = [
   'Electronics',
@@ -49,14 +47,11 @@ export const UpdateProduct = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const getProduct = async (id: string) => {
-      const { data } = await axios.get(`http://localhost:4000/api/v1/product/${id}`, {
-        withCredentials: true
-      })
-      dispatch(setProductDetail(data.product))
+    const getData = async () => {
+      dispatch(setProductDetail(await getProduct(id as string)))
     }
 
-    getProduct(id as string)
+    getData()
   }, [dispatch, id])
 
   useEffect(() => {
@@ -123,14 +118,6 @@ export const UpdateProduct = () => {
       }
     }
 
-    const updateProduct = async (id: string, productData: any) => {
-      const { data } = await axios.put(
-        `http://localhost:4000/api/v1/admin/product/${id}`,
-        productData,
-        { headers: { 'content-type': 'multipart/form-data' }, withCredentials: true }
-      )
-      return data
-    }
     dispatch(updateAdminProduct(await updateProduct(id as string, product)))
     dispatch(setSuccess('Product updated successfully'))
   }

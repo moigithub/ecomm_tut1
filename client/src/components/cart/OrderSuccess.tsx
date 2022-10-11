@@ -1,23 +1,7 @@
-// import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useAlert } from 'react-alert'
-import type {} from 'redux-thunk/extend-redux'
 import { Link } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
-// import { Product } from '../../reducers/productReducers'
-import { RootState } from '../../store'
 import { MetaData } from '../layout/MetaData'
-// import { addCartItem, removeCartItem, saveShippingInfo } from '../../actions/cartActions'
-// import { CartItem } from '../../reducers/cartReducers'
-// import { countries } from 'countries-list'
-// import { CheckoutSteps } from './CheckoutSteps'
 
 export const OrderSuccess = () => {
-  // const navigate = useNavigate()
-  // const alert = useAlert()
-  // const dispatch = useDispatch()
-  // const { shipping } = useSelector((state: RootState) => state.cart)
-
   return (
     <>
       <MetaData title='Order success'></MetaData>
