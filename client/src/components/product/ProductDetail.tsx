@@ -7,9 +7,9 @@ import { RootState } from '../../store'
 import { Loader } from '../layout/Loader'
 import { MetaData } from '../layout/MetaData'
 import { clearStatus, setSuccess } from '../../slices/appStateSlice'
-import { addProductReview, setProductDetail } from '../../slices/productSlice'
+import { addProductReview, getProductDetails, setProductDetail } from '../../slices/productSlice'
 import { updateCartItem } from '../../slices/cartSlice'
-import { getProduct, sendReview } from '../../services/productService'
+import { sendReview } from '../../services/productService'
 
 export const ProductDetails = () => {
   const { id } = useParams()
@@ -24,19 +24,22 @@ export const ProductDetails = () => {
   const [comment, setComment] = useState('')
 
   const getProductDetail = async (id: string, quantity?: number) => {
-    const data = await getProduct(id)
-    return {
-      ...data,
-      image: data.images[0].url,
-      quantity
+    const data = await dispatch(getProductDetails(id))
+    if (getProductDetails.fulfilled.match(data)) {
+      return {
+        ...data.payload,
+        image: data.payload.images[0].url,
+        quantity
+      }
+    } else {
+      // console.error("error getting product detail1", data.payload)
+      console.error('error getting product detail2', data.error)
     }
   }
 
   useEffect(() => {
-    ;(async () => {
-      dispatch(setProductDetail(await getProductDetail(id as string)))
-    })()
-  }, [dispatch, id])
+    getProductDetail(id as string)
+  }, [id])
 
   useEffect(() => {
     if (error) {

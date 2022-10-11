@@ -6,8 +6,8 @@ import { useParams } from 'react-router-dom'
 import { RootState } from '../../store'
 import { Sidebar } from './Sidebar'
 import { clearStatus, setSuccess } from '../../slices/appStateSlice'
-import { setProductDetail, updateAdminProduct } from '../../slices/productSlice'
-import { getProduct, updateProduct } from '../../services/productService'
+import { getProductDetails, setProductDetail, updateAdminProduct } from '../../slices/productSlice'
+import { updateProduct } from '../../services/productService'
 
 const categories = [
   'Electronics',
@@ -48,7 +48,7 @@ export const UpdateProduct = () => {
 
   useEffect(() => {
     const getData = async () => {
-      dispatch(setProductDetail(await getProduct(id as string)))
+      dispatch(getProductDetails(id as string))
     }
 
     getData()

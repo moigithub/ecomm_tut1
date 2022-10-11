@@ -10,9 +10,8 @@ import { RootState } from '../store'
 import { ProductComp } from './product/product'
 import { Loader } from './layout/Loader'
 import 'rc-slider/assets/index.css'
-import { setProducts } from '../slices/productSlice'
 import { clearStatus } from '../slices/appStateSlice'
-import { getProducts } from '../services/productService'
+import { getProducts } from '../slices/productSlice'
 
 const createSliderWithTooltip = Slider.createSliderWithTooltip
 const Range = createSliderWithTooltip(Slider.Range)
@@ -34,7 +33,8 @@ export const Home = () => {
 
   useEffect(() => {
     const getData = async () => {
-      dispatch(setProducts(await getProducts(currentPage, keyword || '', price, category)))
+      const filter = { page: currentPage, keyword: keyword || '', price, category }
+      dispatch(getProducts(filter))
     }
     getData()
   }, [dispatch, currentPage, keyword, price, category])

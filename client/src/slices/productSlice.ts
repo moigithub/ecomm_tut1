@@ -1,30 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit'
-
-interface Image {
-  public_id: string
-  url: string
-}
-export interface Review {
-  _id: string
-  user: string
-  name: string
-  rating: number
-  comment: string
-}
-export interface Product {
-  _id: string
-  name: string
-  price: number
-  description: string
-  ratings: number
-  images: Image[]
-  category: string
-  seller: string
-  stock: number
-  numOfReviews: number
-  reviews: Review[]
-  user: string
-}
+import { ThunkAction } from 'redux-thunk'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { Product, Review } from '../interfaces/product'
+import * as productService from './../services/productService'
 
 interface ProductState {
   loading: boolean
@@ -47,18 +24,93 @@ const initialState: ProductState = {
   error: null
 }
 
+interface ProductPayload {
+  products: Product[]
+  totalCount: number
+  itemsPerPage: number
+}
+interface GetProductsFilter {
+  page: number
+  keyword: string
+  price: number[]
+  category: string
+}
+interface ThunkApi {
+  rejectValue: { message: string }
+}
+
+export const getProducts = createAsyncThunk<ProductPayload, GetProductsFilter, ThunkApi>(
+  'product/getProducts',
+  async (filter, thunkApi) => {
+    try {
+      const { page, keyword, price, category } = filter
+      return await productService.getProducts(page, keyword, price, category)
+    } catch (error: any) {
+      console.error('getProducts', error)
+      return thunkApi.rejectWithValue({ message: error.message })
+    }
+  }
+)
+
+export const getProductDetails = createAsyncThunk<Product, string, ThunkApi>(
+  'product/getProduct',
+  async (id, thunkApi) => {
+    try {
+      return await productService.getProduct(id)
+    } catch (error: any) {
+      console.error('getProduct', error)
+      return thunkApi.rejectWithValue({ message: error.message })
+    }
+  }
+)
+
 export const productSlice = createSlice({
   name: 'product',
   initialState,
+  extraReducers: builder => {
+    builder.addCase(getProducts.pending, state => {
+      state.loading = true
+    })
+    builder.addCase(getProducts.rejected, (state, action) => {
+      state.loading = false
+      if (action.payload) {
+        state.error = action.payload.message
+      } else {
+        state.error = action.error.message
+      }
+    })
+    builder.addCase(getProducts.fulfilled, (state, { payload }) => {
+      state.loading = false
+      state.products = payload.products
+      state.productCount = payload.totalCount
+      state.itemsPerPage = payload.itemsPerPage
+    })
+    //----
+    builder.addCase(getProductDetails.pending, state => {
+      state.loading = true
+    })
+    builder.addCase(getProductDetails.rejected, (state, action) => {
+      state.loading = false
+      if (action.payload) {
+        state.error = action.payload.message
+      } else {
+        state.error = action.error.message
+      }
+    })
+    builder.addCase(getProductDetails.fulfilled, (state, { payload }) => {
+      state.loading = false
+      state.product = payload
+    })
+  },
   reducers: {
-    setProducts: (state, action) => {
-      state.products = action.payload.products
-      state.productCount = action.payload.totalCount
-      state.itemsPerPage = action.payload.itemsPerPage
-    },
-    setProductDetail: (state, action) => {
-      state.product = action.payload
-    },
+    // setProducts: (state, action) => {
+    //   state.products = action.payload.products
+    //   state.productCount = action.payload.totalCount
+    //   state.itemsPerPage = action.payload.itemsPerPage
+    // },
+    // setProductDetail: (state, action) => {
+    //   state.product = action.payload
+    // },
     setProductReviews: (state, action) => {
       state.productReviews = action.payload
     },
